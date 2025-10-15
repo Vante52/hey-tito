@@ -1,260 +1,424 @@
 package com.example.heytito.presentation.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
 
-@OptIn(ExperimentalFoundationApi::class)
+// ────────────────────────────────────────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────────────────────────────────────────
+data class StoreProfileList(
+    val name: String,
+    val followers: String,
+    val following: String,
+    val rating: String,
+    val description: String,
+    val hasNewPublications: Boolean,
+    val mascotMessage: String
+)
+
+data class StoreProductList(
+    val id: String,
+    val name: String,
+    val price: String,
+    val originalPrice: String? = null,
+    val likes: Int = 0,
+    val comments: Int = 0,
+    val hasDiscount: Boolean = false
+)
+
+// ────────────────────────────────────────────────────────────────────────────────
+// SCREEN
+// ────────────────────────────────────────────────────────────────────────────────
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ClienteDashboardScreen(
-    modifier: Modifier = Modifier,
-    onMenuClick: () -> Unit = {},
-    onBookmarkClick: () -> Unit = {},
-    onLikeClick: () -> Unit = {},
+    onBackClick: () -> Unit = {},
+    onFollowClick: () -> Unit = {},
+    onProductClick: (String) -> Unit = {},
+    onFilterClick: () -> Unit = {},
+    onStoreClick: () -> Unit = {},
+    onOpenComments: (String) -> Unit = {},
+    onAddToCart: (String) -> Unit = {}
+) {
+    val colors = MaterialTheme.colorScheme
+    var query by remember { mutableStateOf("") }
+
+    // Chips demo
+    var selected by remember { mutableStateOf(setOf("Streetwear")) }
+    val chips = listOf("Streetwear", "Vintage", "Deportivo")
+
+    // Demo data
+    val products = remember {
+        listOf(
+            StoreProductList("1", "Atelier Nova", "$189.900", hasDiscount = true, likes = 120, comments = 14),
+            StoreProductList("2", "Luna Urban", "$239.900", likes = 44, comments = 3),
+            StoreProductList("3", "EcoWear", "$129.900", likes = 8, comments = 0),
+            StoreProductList("4", "VintageSoul", "$99.900", hasDiscount = true, likes = 76, comments = 9),
+            StoreProductList("5", "UrbanX", "$149.900", likes = 3, comments = 0),
+            StoreProductList("6", "Minimal Co.", "$209.900", likes = 28, comments = 2)
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            Surface(color = colors.surface, shadowElevation = 1.dp) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    IconButton(onClick = onBackClick, modifier = Modifier.size(24.dp)) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                    SearchRow(
+                        query = query,
+                        onQueryChange = { query = it },
+                        onFilterClick = onFilterClick,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+    ) { inner ->
+        LazyColumn(
+            contentPadding = PaddingValues(
+                start = 0.dp, end = 0.dp,
+                top = inner.calculateTopPadding(),
+                bottom = inner.calculateBottomPadding() + 24.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Chips (full width)
+            item {
+                FilterChipsRow(
+                    chips = chips,
+                    selected = selected,
+                    onToggle = { label ->
+                        selected = selected.toMutableSet().apply {
+                            if (contains(label)) remove(label) else add(label)
+                        }
+                    }
+                )
+                Spacer(Modifier.height(4.dp))
+            }
+
+            // Feed estilo Instagram
+            items(products, key = { it.id }) { product ->
+                InstaPostCard(
+                    product = product,
+                    onAvatarClick = onStoreClick,
+                    onThreeDotsClick = onStoreClick,
+                    onOpenComments = { onOpenComments(product.id) },
+                    onAddToCart = { onAddToCart(product.id) },
+                    onImageClick = { onProductClick(product.id) }
+                )
+            }
+        }
+    }
+}
+
+// ────────────────────────────────────────────────────────────────────────────────
+// COMPONENTES
+// ────────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun FilterChipsRow(
+    chips: List<String>,
+    selected: Set<String>,
+    onToggle: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        chips.forEach { label ->
+            FilterChip(
+                selected = selected.contains(label),
+                onClick = { onToggle(label) },
+                label = { Text(label) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun InstaPostCard(
+    product: StoreProductList,
+    onAvatarClick: () -> Unit,
+    onThreeDotsClick: () -> Unit,
+    onOpenComments: () -> Unit,
+    onAddToCart: () -> Unit,
+    onImageClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
 
-    var incognito by remember { mutableStateOf(true) }
+    // Estado local “like / bookmark” por post
+    var liked by remember(product.id) { mutableStateOf(false) }
+    var bookmarked by remember(product.id) { mutableStateOf(false) }
+    var likeCount by remember(product.id) { mutableStateOf(product.likes) }
 
-    // ✅ Antes: grises hardcodeados. Ahora: colores del tema para que respeten heytitoTheme (claro/oscuro).
-    val pages = listOf(
-        colors.primaryContainer,
-        colors.secondaryContainer,
-        colors.tertiaryContainer,
-        colors.surfaceVariant
-    )
-
-    val pagerState = rememberPagerState(pageCount = { pages.size })
-
-    Column(
-        modifier
-            .fillMaxSize()
-            .background(colors.background)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        shape = RoundedCornerShape(0.dp), // borde recto como IG
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
+        // Header (avatar + nombre + menú)
         Row(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 35.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onMenuClick) {
-                // ✅ Aseguramos el tint desde el tema
-                Icon(
-                    Icons.AutoMirrored.Filled.List,
-                    contentDescription = "Menú",
-                    tint = colors.onBackground
-                )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(colors.surfaceVariant)
+                    .clickable { onAvatarClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Search, contentDescription = null, tint = colors.onSurfaceVariant)
             }
-            Spacer(Modifier.weight(1f))
-            FilterChip(
-                selected = incognito,
-                onClick = { incognito = !incognito },
-                label = { Text("Modo incógnito") }
-            )
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(product.name, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                Text("• hace 2 h", fontSize = 11.sp, color = colors.onSurfaceVariant)
+            }
+            IconButton(onClick = onThreeDotsClick) {
+                Icon(Icons.Outlined.MoreVert, contentDescription = "Más opciones")
+            }
         }
+
+        // Carrusel cuadrado como Instagram
+        val pagerState = rememberPagerState(pageCount = { 3 })
 
         Box(
-            Modifier
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(16.dp))
+            modifier = Modifier
                 .fillMaxWidth()
-                .height(600.dp)
+                .aspectRatio(1f)
+                .clickable { onImageClick() }
         ) {
-            // Carrusel
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.matchParentSize()
-            ) { page ->
+            HorizontalPager(state = pagerState) { page ->
                 Box(
-                    Modifier
+                    modifier = Modifier
                         .fillMaxSize()
-                        .background(pages[page])
-                )
-            }
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, start = 12.dp, end = 12.dp)
-                    .align(Alignment.TopCenter),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                repeat(pages.size) { index ->
-                    val selected = pagerState.currentPage == index
-                    Box(
-                        Modifier
-                            .weight(1f)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(
-                                if (selected) colors.primary
-                                else colors.primary.copy(alpha = 0.25f)
-                            )
-                    )
+                        .background(
+                            when (page % 3) {
+                                0 -> colors.surfaceVariant.copy(alpha = 0.45f)
+                                1 -> colors.tertiaryContainer.copy(alpha = 0.45f)
+                                else -> colors.primaryContainer.copy(alpha = 0.45f)
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Foto ${page + 1}")
                 }
             }
 
-            Column(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .background(
-                        // ✅ Gradiente con tokens del tema (mantengo Transparent)
-                        Brush.verticalGradient(
-                            0f to Color.Transparent,
-                            0.3f to colors.surface.copy(alpha = 0.65f),
-                            1f to colors.surface.copy(alpha = 0.90f)
-                        )
-                    )
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 24.dp)
-            ) {
-                Text(
-                    text = "Pantalón Baggy Negro",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 20.sp,
-                        color = colors.onSurface
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "$300.000",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = colors.onSurface
-                    )
-                )
-                Spacer(Modifier.height(8.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TagChip("XS")
-                    TagChip("Negro")
-                    TagChip("StreetWear")
-                }
-
-                Spacer(Modifier.height(10.dp))
-
-                // Distancia / ubicación
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Ubicación",
-                        tint = colors.onSurface.copy(alpha = 0.9f),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(
-                        text = "A 1,5 KM de tu ubicación",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = colors.onSurface
-                        )
-                    )
+            // Badge Oferta (arriba derecha)
+            if (product.hasDiscount) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .background(colors.error, RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("OFERTA", fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = colors.onError)
                 }
             }
+
+            // Indicador de páginas (abajo-centro)
+            PagerIndicator(
+                pageCount = pagerState.pageCount,
+                currentPageIndex = pagerState.currentPage,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp)
+            )
         }
 
-        Spacer(Modifier.height(12.dp))
-
+        // Fila de acciones (like, comentar, enviar, bookmark)
         Row(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 40.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BigCircleAction(
-                icon = Icons.Outlined.BookmarkBorder,
-                contentDesc = "Guardar",
-                onClick = onBookmarkClick
-            )
-            BigCircleAction(
-                icon = Icons.Default.Favorite,
-                contentDesc = "Me gusta",
-                onClick = onLikeClick
-            )
+            IconButton(onClick = {
+                liked = !liked
+                likeCount = if (liked) likeCount + 1 else (likeCount - 1).coerceAtLeast(0)
+            }) {
+                Icon(
+                    imageVector = if (liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = if (liked) "Quitar me gusta" else "Dar me gusta",
+                    tint = if (liked) MaterialTheme.colorScheme.error else LocalContentColor.current
+                )
+            }
+            IconButton(onClick = onOpenComments) {
+                Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = "Comentarios")
+            }
+            IconButton(onClick = { /* compartir */ }) {
+                Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Enviar")
+            }
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = { bookmarked = !bookmarked }) {
+                Icon(
+                    imageVector = if (bookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                    contentDescription = if (bookmarked) "Guardado" else "Guardar"
+                )
+            }
         }
 
-        Spacer(Modifier.height(16.dp))
+        // Likes
+        Text(
+            text = "$likeCount Me gusta",
+            modifier = Modifier.padding(horizontal = 12.dp),
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 14.sp
+        )
+
+        // Caption + precio
+        Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+            Text(text = "${product.name}  •  Nueva colección", fontSize = 13.sp)
+            Spacer(Modifier.height(6.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Text("Precio", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(product.price, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+                FilledTonalButton(
+                    onClick = onAddToCart,
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Icon(Icons.Filled.ShoppingCart, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Añadir al carrito")
+                }
+            }
+        }
+
+        // CTA “Ver comentarios”
+        if (product.comments > 0) {
+            TextButton(onClick = onOpenComments, modifier = Modifier.padding(horizontal = 4.dp)) {
+                Text("Ver los ${product.comments} comentarios")
+            }
+        }
+
+        // Separador sutil
+        Divider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+    }
+}
+
+// Indicador de páginas sencillo (tu ejemplo adaptado)
+@Composable
+fun PagerIndicator(pageCount: Int, currentPageIndex: Int, modifier: Modifier = Modifier) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = modifier
+                .wrapContentHeight()
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            repeat(pageCount) { iteration ->
+                val color = if (currentPageIndex == iteration) Color.DarkGray else Color.LightGray
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                        .size(8.dp)
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun TagChip(text: String) {
+private fun SearchRow(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onFilterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
-    AssistChip(
-        onClick = {  },
-        label = { Text(text) },
-        colors = AssistChipDefaults.assistChipColors(
-            containerColor = colors.secondary.copy(alpha = 0.18f),
-            labelColor = colors.onSurface
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 1.dp,
-            color = colors.secondary
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        singleLine = true,
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+        trailingIcon = {
+            IconButton(onClick = onFilterClick) { Icon(Icons.Default.MoreVert, contentDescription = "Filtros") }
+        },
+        placeholder = { Text("Buscar marcas, estilos…") },
+        shape = RoundedCornerShape(14.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = colors.outline,
+            unfocusedBorderColor = colors.outlineVariant
         )
     )
 }
 
+// ────────────────────────────────────────────────────────────────────────────────
+// PREVIEWS
+// ────────────────────────────────────────────────────────────────────────────────
+@Preview(showBackground = true, name = "Cliente – Light")
 @Composable
-private fun BigCircleAction(
-    icon: ImageVector,
-    contentDesc: String,
-    onClick: () -> Unit
-) {
-    val colors = MaterialTheme.colorScheme
-    OutlinedIconButton(
-        onClick = onClick,
-        modifier = Modifier.size(72.dp),
-        shape = CircleShape,
-        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.25f))
-    ) {
-        Icon(icon, contentDescription = contentDesc, tint = colors.onSurface, modifier = Modifier.size(36.dp))
+private fun ClientePreviewLight() {
+    heytitoTheme(darkTheme = false, dynamicColor = false) {
+        ClienteDashboardScreen(onFilterClick = {})
     }
 }
 
-@Preview(
-    showBackground = true,
-    showSystemUi = true,
-)
+@Preview(showBackground = true, name = "Cliente – Dark")
 @Composable
-fun ClienteDashboardScreenPreview() {
-    heytitoTheme {
-        ClienteDashboardScreen()
+private fun ClientePreviewDark() {
+    heytitoTheme(darkTheme = true, dynamicColor = false) {
+        ClienteDashboardScreen(onFilterClick = {})
     }
 }

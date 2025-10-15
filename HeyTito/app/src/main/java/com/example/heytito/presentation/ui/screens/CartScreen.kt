@@ -68,14 +68,13 @@ fun CartScreen(
         }
     )) { mutableStateOf(mockCart()) }
 
-
     // cantidades por id (state map simple; si quieres también saveable, crea saver propio)
     val qty = remember { mutableStateMapOf("1" to 1, "2" to 2) }
 
     // Cálculos
     val subtotal = items.sumOf { it.price * (qty[it.id] ?: 1) }
-    val envio = 9_900                 // TODO(uni): calcular envío real según dirección
-    val descuento = 20_000            // TODO(uni): aplicar cupón real
+    val envio = 9_900
+    val descuento = 20_000
     val total = subtotal + envio - descuento
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -84,31 +83,60 @@ fun CartScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = colors.background,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
+            // ===== Header unificado: título centrado + back + acciones (color/elevación como Notificaciones) =====
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                color = colors.surface,
+                tonalElevation = 1.dp,
+                shadowElevation = 1.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    // Back
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Atrás",
+                            tint = colors.onSurface
+                        )
+                    }
+
+                    // Título centrado (tipografía/tamaño como pediste)
                     Text(
-                        "Cesta",
+                        text = "Cesta",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 22.sp
-                        )
+                            fontSize = 22.sp,
+                            color = colors.onSurface
+                        ),
+                        modifier = Modifier.align(Alignment.Center)
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+
+                    // Acciones a la derecha (se mantienen)
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = onMenu) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "Menú",
+                                tint = colors.onSurface
+                            )
+                        }
                     }
-                },
-                actions = {
-                    IconButton(onClick = onMenu) {
-                        Icon(Icons.Filled.MoreVert, contentDescription = "Menú")
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
+                }
+            }
+        },
     ) { inner ->
         LazyColumn(
             modifier = Modifier
@@ -184,7 +212,6 @@ private fun CartItemCard(
     onRemove: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // color suave usando surfaceContainer → no tapa, pero separa bien del fondo
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
@@ -223,7 +250,7 @@ private fun CartItemCard(
 
                 Spacer(Modifier.width(8.dp))
 
-                // botoncito “eliminar” (fallback cuando qty no basta)
+                // botoncito “eliminar”
                 Surface(
                     onClick = onRemove,
                     shape = CircleShape,
@@ -270,7 +297,7 @@ private fun QuantityControl(qty: Int, onMinus: () -> Unit, onPlus: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SmallSquareButton(text = "−", onClick = onMinus) // ojo, “−” unicode (más bonito)
+        SmallSquareButton(text = "−", onClick = onMinus)
         Surface(
             modifier = Modifier.widthIn(min = 40.dp),
             shape = RoundedCornerShape(8.dp),
@@ -287,7 +314,6 @@ private fun QuantityControl(qty: Int, onMinus: () -> Unit, onPlus: () -> Unit) {
         }
         SmallSquareButton(text = "+", onClick = onPlus)
     }
-    // TODO(uni): reemplazar por Stepper accesible con IconButtons e íconos Add/Remove para talkback
 }
 
 @Composable
@@ -359,8 +385,6 @@ private fun CouponCard(
                     Text("Aplicar", fontWeight = FontWeight.SemiBold)
                 }
             }
-
-            // comentario: si el cupón es válido, poner chip verde con “10% aplicado”
         }
     }
 }
@@ -410,7 +434,6 @@ private fun SummaryCard(
                     )
                 )
             }
-            // TODO(uni): texto pequeño con “Incluye impuestos” si aplica
         }
     }
 }

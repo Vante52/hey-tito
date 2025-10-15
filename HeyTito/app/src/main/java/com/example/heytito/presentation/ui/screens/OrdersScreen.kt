@@ -325,7 +325,7 @@ private fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // estudiante: aquí pondría un iconito ilustrativo y un CTA para limpiar filtros
+        //aquí pondría un iconito ilustrativo y un CTA para limpiar filtros
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium.copy(

@@ -8,18 +8,32 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
+
+// ────────────────────────────────────────────────────────────────────────────────
+// DATA
+// ────────────────────────────────────────────────────────────────────────────────
 
 data class ProductDetail(
     val title: String,
@@ -43,13 +57,28 @@ data class DetailSection(
     val content: String = ""
 )
 
-// ⚠️ Los previews van al final envueltos en heytitoTheme
+data class ProductComment(val user: String, val text: String)
+
+data class ProductSocial(
+    val likes: Int,
+    val comments: List<ProductComment>,
+    val isLiked: Boolean = false,
+    val isBookmarked: Boolean = false,
+    val postedAgo: String = "hace 2 h",
+    val caption: String = "" // breve descripción tipo IG
+)
+
+// ────────────────────────────────────────────────────────────────────────────────
+// SCREEN
+// ────────────────────────────────────────────────────────────────────────────────
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     onBackClick: () -> Unit = {},
     onMoreClick: () -> Unit = {},
-    onBuyClick: () -> Unit = {}
+    onBuyClick: () -> Unit = {},
+    onOpenComments: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -67,6 +96,18 @@ fun ProductDetailScreen(
         sellerName = "Planeta Vintage"
     )
 
+    val social = remember {
+        ProductSocial(
+            likes = 120,
+            comments = listOf(
+                ProductComment("val_usershop", "¡Se ve brutal! ¿Tienes en S?"),
+                ProductComment("andrea.v", "Lo compré, la tela es divina 💖"),
+                ProductComment("joseph", "¿Hay entrega hoy en Bogotá?")
+            ),
+            caption = "Fit relajado, tiro medio. Ideal para street outfits."
+        )
+    }
+
     val detailSections = listOf(
         DetailSection("Descripción y detalles", Icons.Default.Description),
         DetailSection("Talla", Icons.Default.Straighten),
@@ -79,234 +120,260 @@ fun ProductDetailScreen(
         DetailSection("Políticas de Protección", Icons.Default.Security, isExpandable = true)
     )
 
-    // Nota estudiante: si después metemos galería con pager, mover a Scaffold y usar TopAppBar/BottomAppBar del tema
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-    ) {
-        item {
-            // Header
+    // Estado social local (like/bookmark/likes)
+    var liked by remember { mutableStateOf(social.isLiked) }
+    var bookmarked by remember { mutableStateOf(social.isBookmarked) }
+    var likeCount by remember { mutableStateOf(social.likes) }
+    var captionExpanded by remember { mutableStateOf(false) }
+
+    Scaffold(
+        containerColor = colors.background,
+        topBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surface,
-                shadowElevation = 2.dp
+                tonalElevation = 1.dp,
+                shadowElevation = 1.dp
             ) {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = colors.onSurface
-                        )
+                    IconButton(onClick = onBackClick, modifier = Modifier.align(Alignment.CenterStart)) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = colors.onSurface)
                     }
-
                     Text(
                         text = "Detalles",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSurface
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold, fontSize = 22.sp, color = colors.onSurface
+                        ),
+                        modifier = Modifier.align(Alignment.Center)
                     )
-
-                    Row {
-                        // botoncito compartir (útil para viralidad)
-                        IconButton(onClick = onMoreClick /* TODO: share */) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "Compartir",
-                                tint = colors.onSurface
-                            )
+                    Row(modifier = Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = onMoreClick) {
+                            Icon(Icons.Default.Share, contentDescription = "Compartir", tint = colors.onSurface)
                         }
                         IconButton(onClick = onMoreClick) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Más opciones",
-                                tint = colors.onSurface
-                            )
+                            Icon(Icons.Default.MoreVert, contentDescription = "Más opciones", tint = colors.onSurface)
                         }
                     }
                 }
             }
         }
+    ) { inner ->
+        Box(modifier = Modifier.fillMaxSize().padding(inner)) {
 
-        item {
-            // Placeholder imagen del producto
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .background(colors.surfaceVariant),
-                contentAlignment = Alignment.Center
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 110.dp)
             ) {
-                Text(
-                    text = "Imagen del Producto",
-                    color = colors.onSurfaceVariant,
-                    fontSize = 16.sp
-                )
-                // Nota estudiante: aquí va un pager con zoom y miniaturas abajo (UX top)
-            }
-        }
-
-        item {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = productDetail.title,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onSurface
-                )
-                // Nota estudiante: añadir chipcitos de estado (Nuevo/Usado) y categoría, usando secondaryContainer
-            }
-        }
-
-        item {
-            // Vendedor + precio + mensajito de Tito
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Colección René Risco",
-                        fontSize = 12.sp,
-                        color = colors.onSurfaceVariant
-                    )
-                    Text(
-                        text = productDetail.sellerName,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSurface
-                    )
-                    Text(
-                        text = "Cerca: 9.6k • ${productDetail.condition}",
-                        fontSize = 12.sp,
-                        color = colors.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Precios (mostrar tachado si hay oferta)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = productDetail.currentPrice,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.onSurface
-                        )
-                        if (productDetail.isOnSale) {
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = productDetail.originalPrice,
-                                fontSize = 14.sp,
-                                color = colors.onSurfaceVariant,
-                                textDecoration = TextDecoration.LineThrough
-                            )
-                            // Nota estudiante: poner badge -% con error/onError si quieres más punch
-                        }
+                // Galería / imagen principal
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .background(colors.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Imagen del Producto", color = colors.onSurfaceVariant, fontSize = 16.sp)
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    // Mensaje de Tito
+                // —— NUEVO: bloque social al estilo Instagram ——
+                item {
+                    // Fila de acciones
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(colors.primary.copy(alpha = 0.12f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "🐶", fontSize = 20.sp)
+                        IconButton(onClick = {
+                            liked = !liked
+                            likeCount = if (liked) likeCount + 1 else (likeCount - 1).coerceAtLeast(0)
+                        }) {
+                            Icon(
+                                imageVector = if (liked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = if (liked) "Quitar me gusta" else "Dar me gusta",
+                                tint = if (liked) colors.error else LocalContentColor.current
+                            )
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = productDetail.mascotMessage,
-                            fontSize = 14.sp,
-                            color = colors.primary,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-
-        item {
-            // Secciones de detalles
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    detailSections.forEachIndexed { index, section ->
-                        DetailSectionItem(
-                            section = section,
-                            productDetail = productDetail
-                        )
-                        if (index < detailSections.size - 1) {
-                            HorizontalDivider(
-                                color = colors.outlineVariant,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(vertical = 12.dp)
+                        IconButton(onClick = onOpenComments) {
+                            Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = "Comentarios")
+                        }
+                        IconButton(onClick = { /* compartir/enviar */ }) {
+                            Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = "Enviar")
+                        }
+                        Spacer(Modifier.weight(1f))
+                        IconButton(onClick = { bookmarked = !bookmarked }) {
+                            Icon(
+                                imageVector = if (bookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                contentDescription = if (bookmarked) "Guardado" else "Guardar"
                             )
                         }
                     }
+
+                    // Likes
+                    Text(
+                        text = "$likeCount Me gusta",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 14.sp
+                    )
+
+                    // Caption con “ver más”
+                    val captionText = buildAnnotatedString {
+                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) {
+                            append(productDetail.brand)
+                        }
+                        append("  ")
+                        append("${productDetail.title} — ${social.caption}")
+                    }
+                    Text(
+                        text = captionText,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .clickable { captionExpanded = !captionExpanded },
+                        maxLines = if (captionExpanded) Int.MAX_VALUE else 2,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 13.sp
+                    )
+                    if (!captionExpanded) {
+                        TextButton(
+                            onClick = { captionExpanded = true },
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                        ) { Text("Más") }
+                    }
+
+                    // Vista previa de comentarios (2)
+                    val preview = social.comments.take(2)
+                    Column(Modifier.padding(horizontal = 16.dp)) {
+                        preview.forEach { c ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    buildAnnotatedString {
+                                        withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append(c.user) }
+                                        append("  ${c.text}")
+                                    },
+                                    fontSize = 13.sp
+                                )
+                            }
+                            Spacer(Modifier.height(2.dp))
+                        }
+                    }
+
+                    // Ver todos los comentarios
+                    if (social.comments.isNotEmpty()) {
+                        TextButton(
+                            onClick = onOpenComments,
+                            contentPadding = PaddingValues(horizontal = 16.dp)
+                        ) { Text("Ver los ${social.comments.size} comentarios") }
+                    }
+
+                    // Timestamp estilo IG
+                    Text(
+                        text = social.postedAgo.uppercase(),
+                        color = colors.onSurfaceVariant,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(start = 16.dp, top = 2.dp, bottom = 8.dp)
+                    )
                 }
+                // —— FIN bloque social ——
+
+                // Título principal (conservado)
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)) {
+                        Text(productDetail.title, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
+                    }
+                }
+
+                // Card vendedor/precios/mascota (conservada)
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = colors.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Colección René Risco", fontSize = 12.sp, color = colors.onSurfaceVariant)
+                            Text(productDetail.sellerName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
+                            Text("Cerca: 9.6k • ${productDetail.condition}", fontSize = 12.sp, color = colors.onSurfaceVariant)
+                            Spacer(Modifier.height(16.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(productDetail.currentPrice, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = colors.onSurface)
+                                if (productDetail.isOnSale) {
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(productDetail.originalPrice, fontSize = 14.sp, color = colors.onSurfaceVariant, textDecoration = TextDecoration.LineThrough)
+                                }
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier.size(40.dp).clip(CircleShape).background(colors.primary.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) { Text("🐶", fontSize = 20.sp) }
+                                Spacer(Modifier.width(12.dp))
+                                Text(productDetail.mascotMessage, fontSize = 14.sp, color = colors.primary, modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+
+                // Secciones de detalle (conservadas)
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = colors.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            val items = listOf(
+                                DetailSection("Descripción y detalles", Icons.Default.Description),
+                                DetailSection("Talla", Icons.Default.Straighten),
+                                DetailSection("Categoría", Icons.Default.Category),
+                                DetailSection("Estado", Icons.Default.Star),
+                                DetailSection("Color", Icons.Default.Palette),
+                                DetailSection("Guía de Tallas", Icons.Default.Straighten, isExpandable = true),
+                                DetailSection("Materiales", Icons.Default.Texture, isExpandable = true),
+                                DetailSection("Estimación de envío", Icons.Default.LocalShipping, isExpandable = true),
+                                DetailSection("Políticas de Protección", Icons.Default.Security, isExpandable = true)
+                            )
+                            items.forEachIndexed { index, section ->
+                                DetailSectionItem(section = section, productDetail = productDetail)
+                                if (index < items.size - 1) {
+                                    HorizontalDivider(color = colors.outlineVariant, thickness = 1.dp, modifier = Modifier.padding(vertical = 12.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item { Spacer(Modifier.height(8.dp)) }
             }
-        }
 
-        item { Spacer(modifier = Modifier.height(100.dp)) } // espacio para el botón flotante
-    }
-
-    // Botón de compra flotante
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            color = colors.surface.copy(alpha = 0f) // transparente
-        ) {
-            Button(
-                onClick = onBuyClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.primary
-                ),
-                shape = RoundedCornerShape(25.dp)
+            // Botón Comprar (conservado)
+            Surface(
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp),
+                color = Color.Transparent
             ) {
-                Text(
-                    text = "Comprar",
-                    color = colors.onPrimary,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Button(
+                    onClick = onBuyClick,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+                    shape = RoundedCornerShape(25.dp)
+                ) {
+                    Text("Comprar", color = colors.onPrimary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
+
+// ────────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun DetailSectionItem(
@@ -314,7 +381,6 @@ private fun DetailSectionItem(
     productDetail: ProductDetail
 ) {
     val colors = MaterialTheme.colorScheme
-
     val content = when (section.title) {
         "Descripción y detalles" -> "Prenda original, sin manchas ni roturas. Corte recto, tiro medio."
         "Talla" -> productDetail.size
@@ -331,49 +397,26 @@ private fun DetailSectionItem(
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = section.icon,
-            contentDescription = null,
-            tint = colors.primary, // iconito de marca
-            modifier = Modifier.size(20.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = section.title,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = colors.onSurface
-            )
-
+        Icon(section.icon, contentDescription = null, tint = colors.primary, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            Text(section.title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = colors.onSurface)
             if (content.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = content,
-                    fontSize = 12.sp,
-                    color = colors.onSurfaceVariant
-                )
+                Spacer(Modifier.height(4.dp))
+                Text(content, fontSize = 12.sp, color = colors.onSurfaceVariant)
             }
         }
-
         if (section.isExpandable) {
-            // botoncito para desplegar (luego cambiar por animación + contenido)
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Expandir",
-                tint = colors.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
+            Icon(Icons.Default.ChevronRight, contentDescription = "Expandir", tint = colors.onSurfaceVariant, modifier = Modifier.size(18.dp))
         }
     }
 }
 
-// ==========================
-// Previews con tu tema (dynamicColor = false)
-// ==========================
-@Preview(showBackground = true, name = "Product Detail – Light (Brand)")
+// ────────────────────────────────────────────────────────────────────────────────
+// PREVIEWS
+// ────────────────────────────────────────────────────────────────────────────────
+
+@Preview(showBackground = true, name = "Product Detail – Light")
 @Composable
 private fun ProductDetailPreviewLight() {
     heytitoTheme(darkTheme = false, dynamicColor = false) {
@@ -381,7 +424,7 @@ private fun ProductDetailPreviewLight() {
     }
 }
 
-@Preview(showBackground = true, name = "Product Detail – Dark (Brand)")
+@Preview(showBackground = true, name = "Product Detail – Dark")
 @Composable
 private fun ProductDetailPreviewDark() {
     heytitoTheme(darkTheme = true, dynamicColor = false) {

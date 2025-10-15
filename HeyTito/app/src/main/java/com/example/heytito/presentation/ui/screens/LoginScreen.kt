@@ -1,12 +1,12 @@
 package com.example.heytito.presentation.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -14,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -21,7 +23,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
+import com.example.heytito.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,38 +41,46 @@ fun LoginScreen(
     var password by rememberSaveable { mutableStateOf("") }
     var showPassword by rememberSaveable { mutableStateOf(false) }
 
-    // scaffold para poder meter topbar si luego queremos
     Scaffold(
         containerColor = colors.background,
         topBar = {
-            // Top bar simple con título centrado
-            Surface(color = colors.surface, tonalElevation = 1.dp, shadowElevation = 1.dp) {
-                Row(
+            // ===== Header unificado: título centrado + back =====
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                color = colors.surface,
+                tonalElevation = 1.dp,
+                shadowElevation = 1.dp
+            ) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
-                    // botoncito de volver (dejar simple)
-                    IconButton(onClick = onBackClick) {
+                    // Back (izquierda)
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
                             tint = colors.onSurface
                         )
+
                     }
-                    Spacer(Modifier.width(8.dp))
+
+                    // Título centrado (misma tipografía que el resto)
                     Text(
                         text = "Iniciar sesión",
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold,
+                            fontSize = 22.sp,
                             color = colors.onSurface
-                        )
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.Center)
                     )
-                    // hueco para balancear el back (así el título queda bien centrado)
-                    Spacer(Modifier.width(48.dp))
                 }
             }
         }
@@ -81,14 +93,14 @@ fun LoginScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // texto de apoyo con onSurfaceVariant para que no “grite”
+            // texto de apoyo
             Text(
                 text = "Ingresa a tu cuenta y encuentra nuevas ofertas",
                 style = MaterialTheme.typography.bodyMedium.copy(color = colors.onSurfaceVariant),
                 textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(32.dp)) // separador para que respire
+            Spacer(Modifier.height(32.dp))
 
             /* ------------------------ Email / Teléfono ------------------------ */
             OutlinedTextField(
@@ -99,7 +111,6 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                // color así de suave para que no tape el contenido
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = colors.primary,
                     unfocusedBorderColor = colors.outline,
@@ -126,7 +137,6 @@ fun LoginScreen(
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    // botoncito para mostrar/ocultar (UX rápido)
                     IconButton(onClick = { showPassword = !showPassword }) {
                         Icon(
                             imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
@@ -134,6 +144,7 @@ fun LoginScreen(
                             tint = colors.onSurfaceVariant
                         )
                     }
+
                 },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = colors.primary,
@@ -150,7 +161,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // linkcito “olvidé mi pass” con primary (que destaque pero sin ser muy fuerte)
+            // link “olvidé mi pass”
             Text(
                 text = "¿Olvidaste tu contraseña?",
                 style = MaterialTheme.typography.labelLarge.copy(color = colors.primary),
@@ -162,7 +173,17 @@ fun LoginScreen(
 
             Spacer(Modifier.weight(1f))
 
-            // Botón principal: usar onPrimary para contraste AA
+            // Personaje "Tito" (imagen desde drawable)
+            Image(
+                painter = painterResource(id = R.drawable.guru),
+                contentDescription = "Tito",
+                modifier = Modifier.size(370.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            // Botón principal
             Button(
                 onClick = onLoginClick,
                 modifier = Modifier
@@ -175,7 +196,7 @@ fun LoginScreen(
                     disabledContainerColor = colors.surfaceVariant,
                     disabledContentColor = colors.onSurfaceVariant
                 ),
-                shape = MaterialTheme.shapes.large // redondeado bonito
+                shape = MaterialTheme.shapes.large
             ) {
                 Text(
                     text = "Continuar",
@@ -184,15 +205,11 @@ fun LoginScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-
-            // TODO(uni): validar formato email/teléfono y mostrar supportingText si hay error
-            // TODO(uni): botón social (Google/Apple) abajo “botoncito opcional”
-            // TODO(uni): ajustar insets de IME si el teclado tapa el botón (WindowInsets.ime)
         }
     }
 }
 
-//Con el heytitoTheme
+// Con el heytitoTheme
 
 @Preview(showBackground = true, showSystemUi = true, name = "Login – Light")
 @Composable

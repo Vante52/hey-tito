@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,7 +47,7 @@ fun ChatScreen(
         mutableStateOf(
             listOf(
                 ChatMessage(
-                    "Jean Azul Levis Talla S\n¡Has hecho match! Puedes chatear con el vendedor para contactar tu compra.",
+                    "Jean Azul Levis Talla S\n Puedes chatear con el vendedor para contactar tu compra.",
                     false
                 ),
                 ChatMessage("Ah, sí?", false),
@@ -70,19 +69,24 @@ fun ChatScreen(
             .fillMaxSize()
             .background(colors.background)
     ) {
-        // Header del chat
+        // ===================== Header UNIFICADO =====================
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             color = colors.surface,
-            shadowElevation = 4.dp
+            tonalElevation = 1.dp,
+            shadowElevation = 1.dp
         ) {
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
-                IconButton(onClick = onBackClick) {
+                // Back (izquierda)
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver",
@@ -90,62 +94,50 @@ fun ChatScreen(
                     )
                 }
 
-                // Avatar y nombre
+                // Título centrado (nombre + subtítulo)
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = contactName,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 22.sp,
+                            color = colors.onSurface
+                        ),
+                        maxLines = 1
+                    )
+                    Text(
+                        text = contactSubtitle,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+
+                // Acciones (derecha): llamar + más
                 Row(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.align(Alignment.CenterEnd),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(colors.surfaceVariant)
-                    ) {
+                    IconButton(onClick = onCallClick) {
                         Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(8.dp),
-                            tint = colors.onSurfaceVariant
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = "Llamar",
+                            tint = colors.onSurface
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    Column {
-                        Text(
-                            text = contactName,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = colors.onSurface
-                        )
-                        Text(
-                            text = contactSubtitle,
-                            fontSize = 12.sp,
-                            color = colors.onSurfaceVariant
+                    IconButton(onClick = onMoreClick) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Más opciones",
+                            tint = colors.onSurface
                         )
                     }
-                }
-
-                // Botones de acción
-                IconButton(onClick = onCallClick) {
-                    Icon(
-                        imageVector = Icons.Default.Phone,
-                        contentDescription = "Llamar",
-                        tint = colors.primary
-                    )
-                }
-
-                IconButton(onClick = onMoreClick) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Más opciones",
-                        tint = colors.primary
-                    )
                 }
             }
         }
+        // ============================================================
 
         // Mensaje/banner superior (informativo)
         Box(

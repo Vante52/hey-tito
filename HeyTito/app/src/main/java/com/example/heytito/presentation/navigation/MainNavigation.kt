@@ -26,13 +26,12 @@ fun MainNavigation() {
     // Rutas donde se muestra la bottom bar
     val bottomBarRoutes = remember {
         setOf(
-            AppScreens.Search.route,
-            AppScreens.Chat.route,
+            AppScreens.Cart.route,
             AppScreens.Notifications.route,
             AppScreens.Profile.route,
-            AppScreens.SellerDashboard.route,
-            AppScreens.StoreProfile.route,
-            AppScreens.Statistics.route
+            AppScreens.Home.route,
+            AppScreens.DeliveryPickup.route,
+            AppScreens.Favorites.route
         )
     }
 
@@ -44,14 +43,14 @@ fun MainNavigation() {
                 label = "Home"
             ),
             BottomNavItem(
-                route = AppScreens.Search.route,
-                icon = Icons.Default.Search,
-                label = "Search"
+                route = AppScreens.Cart.route,
+                icon = Icons.Default.ShoppingCart,
+                label = "Cart"
             ),
             BottomNavItem(
-                route = AppScreens.Chat.route,
+                route = AppScreens.ChatList.route,
                 icon = Icons.Default.Email,
-                label = "Chat"
+                label = "Chat_list"
             ),
             BottomNavItem(
                 route = AppScreens.Notifications.route,
@@ -99,7 +98,17 @@ fun MainNavigation() {
             composable(AppScreens.Welcome.route) {
                 WelcomeScreen(
                     onCreateAccount = { navController.navigate(AppScreens.Register.route) },
+                    onContinueWithGoogle = {navController.navigate(AppScreens.Login.route)},
+                    onContinueWithApple = {navController.navigate((AppScreens.Login.route))}
                     /*onLogin = {  si existe login: navController.navigate(AppScreens.Home)  }*/
+                )
+            }
+
+            composable (AppScreens.Login.route) {
+                LoginScreen (
+                    onLoginClick = {navController.navigate(AppScreens.Home.route)},
+                    onBackClick = {navController.popBackStack()},
+                    onForgotPasswordClick = {}
                 )
             }
             composable(AppScreens.Register.route) {
@@ -139,9 +148,12 @@ fun MainNavigation() {
             composable(AppScreens.Home.route) {
                 // Corrige si tu nombre real es ClienteDashboardScreen (ojo con la "i")
                 ClienteDashboardScreen(
-                    onMenuClick = { navController.navigate(AppScreens.Search.route) },
-                    onLikeClick = { navController.navigate(AppScreens.SellerDashboard.route) },
-                    onBookmarkClick = { navController.navigate(AppScreens.ProductDetail.route) }
+                    onBackClick = { navController.popBackStack() },
+                    onFollowClick = { /* ... */ },
+                    onProductClick = {navController.navigate(AppScreens.ProductDetail.route)},
+                        //{ id -> /* navController.navigate("product/$id") */ },
+                    onStoreClick = { navController.navigate(AppScreens.StoreProfile.route) },
+                    onFilterClick = { navController.navigate(AppScreens.Search.route) }
                 )
             }
             composable(AppScreens.Search.route) {
@@ -161,71 +173,88 @@ fun MainNavigation() {
             }
             composable(AppScreens.Cart.route) {
                 CartScreen(
-                    onCheckoutClick = { navController.navigate(AppScreens.SellerDashboard.route) },
+                    onCheckoutClick = { navController.navigate(AppScreens.DeliveryPickup.route) },
                     onBackClick = { navController.popBackStack() }
                 )
             }
 
-            // Seller
-            composable(AppScreens.SellerDashboard.route) {
-                SellerDashboardScreen(
-                    onActionClick = { action ->
-                        when (action) {
-                            "add_product"   -> navController.navigate(AppScreens.CreateProduct.route)
-                            "show_products" -> navController.navigate(AppScreens.MyProducts.route)
-                            "my_orders"     -> navController.navigate(AppScreens.Orders.route)
-                            "shipments"     -> navController.navigate(AppScreens.UpcomingDeliveries.route)
-                            "reviews", "comments" -> navController.navigate(AppScreens.Statistics.route)
-                            else -> {}
-                        }
-                    }
-                )
-            }
-            composable(AppScreens.CreateProduct.route) {
-                CreateProductScreen(
-                    onSaveDraftClick = { navController.popBackStack() },
-                )
-            }
-            composable(AppScreens.MyProducts.route) {
-                MyProductsScreen(
-                    onBackClick = { navController.popBackStack() },
-                    onAddProductClick = {navController.navigate(AppScreens.CreateProduct.route)},
-//                    onProductActionClick = { /* productId -> navController.navigate("${AppScreens.ProductDetail}/$productId") */ }
-                )
-            }
+
             composable(AppScreens.Orders.route) {
                 OrdersScreen(
-                    onOrderClick = { navController.navigate(AppScreens.DeliverySignup.route) },
+                    //onOrderClick = { navController.navigate(AppScreens..route) },
                     onBackClick = { navController.popBackStack() }
                 )
             }
-            composable(AppScreens.DeliverySignup.route) {
-                DeliverySignupScreen(
-                    onSubmitClick = { navController.navigate(AppScreens.UpcomingDeliveries.route) },
-                    onBackClick = { navController.popBackStack() }
-                )
-            }
-            composable(AppScreens.UpcomingDeliveries.route) {
-                UpcomingDeliveriesScreen(
-                    onAcceptClick = { navController.navigate(AppScreens.DeliveryPickup.route) },
-                )
-            }
+
             composable(AppScreens.DeliveryPickup.route) {
-                DeliveryPickupScreen()
-            }
-            composable(AppScreens.Statistics.route) {
-                StatisticsScreen(
-                    onBackClick = { navController.popBackStack() }
+                DeliveryPickupScreen(
+                    onBackClick = {navController.popBackStack()}
                 )
             }
 
             // Tabs de la bottom bar
-            composable(AppScreens.Chat.route) { ChatScreen() }
-            composable(AppScreens.Notifications.route) { NotificationsScreen() }
-            composable(AppScreens.Profile.route) { ProfileScreen() }
+            composable(AppScreens.Chat.route) {
+                ChatScreen(
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            // MainNavigation.kt (dentro del NavHost)
+            composable(AppScreens.ChatList.route) {
+                ChatListScreen(
+                    onOpenChat = { chatId, isTito ->
+                        if (isTito) {
+                            navController.navigate(AppScreens.TitoChat.route)
+                        } else {
+                            navController.navigate("chat/$chatId")
+                        }
+                    },
+                    onBackClick = { navController.popBackStack() },
+                    onNewChat = { /* ... */ }
+                )
+            }
 
-            composable(AppScreens.StoreProfile.route) { StoreProfileScreen() }
-            composable(AppScreens.Availability.route) { AvailabilityScreen() }
+            composable(AppScreens.Chat.route) {
+                ChatScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onMoreClick = {},
+                    onCallClick = {}
+                )
+            }
+
+            composable(AppScreens.TitoChat.route) {
+                TitoChatScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onViewProduct = { /* navController.navigate(AppScreens.ProductDetail.route) */ },
+                    onViewProfile = { /* navController.navigate(AppScreens.StoreProfile.route) */ }
+                )
+            }
+
+            composable (AppScreens.Favorites.route ){
+                FavoritesScreen(
+                    onBack = {navController.popBackStack()},
+                    onCartClick = {},
+                    onAddCategory = {},
+                    onOpenProduct = {}
+                )
+            }
+
+
+            composable(AppScreens.Notifications.route) { NotificationsScreen(
+                onNotificationClick = {},
+                onMarkAllRead = {}
+            ) }
+
+            composable(AppScreens.Profile.route) { ProfileScreen(
+                onBackClick = {navController.popBackStack()},
+                onSavedClick = {navController.navigate(AppScreens.Favorites.route)},
+                onLogoutClick = {navController.navigate(AppScreens.Welcome.route)}
+            ) }
+
+            composable(AppScreens.StoreProfile.route) { StoreProfileScreen(
+                onBackClick = {navController.popBackStack()},
+                onFollowClick = {},
+                onProductClick = {}
+            ) }
         }
     }
 }

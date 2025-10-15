@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
 import kotlinx.coroutines.launch
-import kotlin.collections.associate
 
 // Enum para los diferentes tipos de pantalla
 enum class PreferenceType {
@@ -40,7 +38,7 @@ enum class PreferenceType {
 data class PreferenceOption(
     val id: String,
     val title: String,
-    val icon: ImageVector, // Nota estudiante: en real, vendría un drawable/url
+    val icon: ImageVector, //   en real, vendría un drawable/url
     val backgroundColor: Color = Color.White // lo usamos como "swatch" de color, no como fondo del card
 )
 
@@ -56,22 +54,22 @@ fun PreferencesScreen(
     val (title, subtitle, options) = when (preferenceType) {
         PreferenceType.STYLES -> Triple(
             "Cuéntanos qué te gusta",
-            "Esto nos ayudará a recomendarte lo que más te interesa",
+            "Esto nos ayudará a traerte más ropa de tu estilo",
             getStyleOptions()
         )
         PreferenceType.COLORS -> Triple(
             "Cuéntanos qué te gusta",
-            "Esto nos ayudará a recomendarte lo que más te interesa",
+            "¿Cuál color te gustaría ver más en tus prendas?",
             getColorOptions()
         )
         PreferenceType.SIZES -> Triple(
             "Cuéntanos qué te gusta",
-            "Esto nos ayudará a encontrarte las mejores ofertas",
+            "¡Es importante tener tu talla en nuestro stock!",
             getSizeOptions()
         )
         PreferenceType.CATEGORIES -> Triple(
             "Cuéntanos qué te gusta",
-            "Esto nos ayudará a encontrarte lo que más te interesa",
+            "¿Qué prendas sueles comprar?",
             getCategoryOptions()
         )
     }

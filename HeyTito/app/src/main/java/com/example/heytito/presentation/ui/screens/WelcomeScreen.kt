@@ -1,5 +1,8 @@
 package com.example.heytito.presentation.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
+import com.example.heytito.R
 
 @Composable
 fun WelcomeScreen(
@@ -48,27 +52,15 @@ fun WelcomeScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Personaje "Tito" (placeholder)
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .background(
-                        colors.primary.copy(alpha = 0.12f), // tinte del color principal
-                        RoundedCornerShape(16.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "👋\nHola,\nsoy Tito",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center,
-                    color = colors.primary // texto con color principal del tema
-                )
-            }
-
+            // Personaje "Tito" (imagen desde drawable)
+            Image(
+                painter = painterResource(id = R.drawable.welcome),
+                contentDescription = "Tito",
+                modifier = Modifier.size(370.dp),
+                contentScale = ContentScale.Fit
+            )
             Spacer(modifier = Modifier.weight(1f))
 
             // Botones de acción

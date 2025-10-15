@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
 
-// Nota estudiante: renombré este data class para no chocar con el composable Material3 FilterChip
+//  renombré este data class para no chocar con el composable Material3 FilterChip
 data class FilterCategory(
     val id: String,
     val name: String,
@@ -33,7 +33,7 @@ data class FilterCategory(
 data class FilterTag(
     val id: String,
     val name: String,
-    // Nota estudiante: estos se usan SOLO para la sección “Colores”.
+    //   estos se usan SOLO para la sección “Colores”.
     // Para “Estilos/Prendas” usamos tokens del tema en el UI, no estos campos.
     val colorArgb: Int? = null,           // ej. 0xFF2196F3 (azul)
     val textColorArgb: Int? = null        // ej. 0xFFFFFFFF
@@ -44,7 +44,7 @@ data class PriceRange(
     val max: String
 )
 
-// ⚠️ Sin @Preview aquí. Los previews van al final envueltos en heytitoTheme
+// Sin @Preview aquí. Los previews van al final envueltos en heytitoTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -153,7 +153,7 @@ fun SearchScreen(
                                 tint = colors.onSurfaceVariant
                             )
                         },
-                        // Nota estudiante: “botoncito” para disparar la búsqueda sin teclado
+                        //   “botoncito” para disparar la búsqueda sin teclado
                         trailingIcon = {
                             IconButton(onClick = { onSearchClick() }) {
                                 Icon(
@@ -168,7 +168,7 @@ fun SearchScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // Nota estudiante: este “+” abre modal para filtros avanzados o guardados
+                    //  este “+” abre modal para filtros avanzados o guardados
                     IconButton(
                         onClick = { /* TODO: abrir modal filtros guardados */ },
                         modifier = Modifier
@@ -228,7 +228,7 @@ fun SearchScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 ) {
                     items(styleFilters) { filter ->
-                        // Nota estudiante: usar primaryContainer/onPrimaryContainer para que no “tape” tanto
+                        //   usar primaryContainer/onPrimaryContainer para que no “tape” tanto
                         FilterTagChipThemed(
                             label = filter.name,
                             onClick = { /* TODO: aplicar filtro */ }
@@ -358,7 +358,7 @@ fun SearchScreen(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = "Ubicación",
-                                tint = colors.secondary, // Nota estudiante: color no tan fuerte
+                                tint = colors.secondary, //   color no tan fuerte
                                 modifier = Modifier.size(32.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
@@ -383,7 +383,7 @@ fun SearchScreen(
                 )
 
                 Spacer(modifier = Modifier.height(100.dp))
-                // Nota estudiante: “botoncito” aplicar filtros podría ir sticky en la parte baja
+                // “botoncito” aplicar filtros podría ir sticky en la parte baja
             }
         }
     }
@@ -399,7 +399,7 @@ private fun FilterCategoryChip(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // Nota estudiante: seleccionado -> primary/onPrimary; no seleccionado -> surface + borde outline
+    //   seleccionado -> primary/onPrimary; no seleccionado -> surface + borde outline
     Surface(
         onClick = onClick,
         modifier = Modifier.height(40.dp),
@@ -429,7 +429,7 @@ private fun FilterTagChipThemed(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // Nota estudiante: usamos primaryContainer para que no “grite”; texto con onPrimaryContainer
+    //   usamos primaryContainer para que no “grite”; texto con onPrimaryContainer
     Surface(
         onClick = onClick,
         modifier = Modifier.height(32.dp),
@@ -457,7 +457,7 @@ private fun FilterColorChip(
     onClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    // Nota estudiante: estos sí llevan color “fuerte” para representar el color del producto
+    //   estos sí llevan color “fuerte” para representar el color del producto
     val bg = filter.colorArgb?.let { androidx.compose.ui.graphics.Color(it) } ?: colors.surfaceVariant
     val fg = filter.textColorArgb?.let { androidx.compose.ui.graphics.Color(it) }
         ?: (if (filter.colorArgb == null) colors.onSurfaceVariant else colors.onPrimary)
