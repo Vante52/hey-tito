@@ -32,7 +32,7 @@ data class NotificationItem(
     val profileImageUrl: String? = null,
     val type: NotificationType,
     val productImageUrl: String? = null,
-    val isUnread: Boolean = true // estudiante: flag para punto indicador/unread
+    val isUnread: Boolean = true // flag para punto indicador/unread
 )
 
 enum class NotificationType { MATCH, ORDER, MESSAGE, CONFIRMATION }
@@ -42,14 +42,14 @@ enum class NotificationType { MATCH, ORDER, MESSAGE, CONFIRMATION }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationsScreen(
-    onMarkAllRead: () -> Unit = {}, // estudiante: acción para “Marcar todo como leído”
+    onMarkAllRead: () -> Unit = {}, // acción para “Marcar todo como leído”
     onNotificationClick: (NotificationItem) -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     var selectedTab by rememberSaveable { mutableStateOf(0) } // saveable para rotación
     val tabs = listOf("Todo", "Matches", "Pedidos", "Mensajes")
 
-    // Mock de datos (estudiante: esto luego viene del repo/paging)
+    // Mock de datos (esto luego viene del repo/paging)
     val all = listOf(
         NotificationItem("1", "fashionista_ana",  "¡Match! Le gustó chaqueta de cuero negra", "1d", type = NotificationType.MATCH),
         NotificationItem("2", "carlos_vintage",   "Tu pedido está en camino - Jeans vintage azul", "1d", type = NotificationType.ORDER),
@@ -94,7 +94,7 @@ fun NotificationsScreen(
                         ),
                         modifier = Modifier.align(Alignment.Center)
                     )
-                    // estudiante: “botoncito” de Marcar todo leído arriba a la derecha
+                    // “botoncito” de Marcar todo leído arriba a la derecha
                     TextButton(
                         onClick = onMarkAllRead,
                         modifier = Modifier.align(Alignment.CenterEnd),
@@ -165,7 +165,7 @@ fun NotificationsScreen(
                         onClick = { onNotificationClick(notification) }
                     )
                 }
-                // estudiante: paginación → usar Paging3 con footer de carga
+                // paginación → usar Paging3 con footer de carga
             }
         }
     }
@@ -181,7 +181,7 @@ private fun NotificationCard(
     val colors = MaterialTheme.colorScheme
     val dotColor = when (notification.type) {
         NotificationType.MATCH -> colors.primary
-        NotificationType.ORDER -> colors.tertiary      // estudiante: “colorcito” de logística/estado
+        NotificationType.ORDER -> colors.tertiary      // “colorcito” de logística/estado
         NotificationType.MESSAGE -> colors.secondary
         NotificationType.CONFIRMATION -> colors.inversePrimary
     }
@@ -258,7 +258,7 @@ private fun NotificationCard(
                     maxLines = 2
                 )
 
-                // estudiante: “botoncito” CTA contextual (p.ej., Ver pedido / Responder) debajo si aplica el tipo
+                // “botoncito” CTA contextual (p.ej., Ver pedido / Responder) debajo si aplica el tipo
                 // cuando haya deep links a pedido o chat
             }
 
@@ -286,13 +286,13 @@ private fun NotificationCard(
             // Punto indicador (tipo / unread)
             Box(
                 modifier = Modifier
-                    .size(if (notification.isUnread) 10.dp else 8.dp) // estudiante: un pelín más grande si es unread
+                    .size(if (notification.isUnread) 10.dp else 8.dp) // un pelín más grande si es unread
                     .clip(CircleShape)
                     .background(if (notification.isUnread) dotColor else colors.outlineVariant)
             )
         }
     }
-    // estudiante: swipe actions (barrer para archivar) con Modifier.pointerInput + detectDragGestures si quieres
+    // swipe actions (barrer para archivar) con Modifier.pointerInput + detectDragGestures si quieres
 }
 
 /* ----------------------------- Empty State -------------------------------- */
@@ -307,7 +307,7 @@ private fun EmptyNotificationsState() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // estudiante: iconito 👀 o campanita aquí
+        // iconito 👀 o campanita aquí
         Text(
             text = "Sin notificaciones",
             style = MaterialTheme.typography.titleMedium.copy(
@@ -320,7 +320,7 @@ private fun EmptyNotificationsState() {
             text = "Cuando tengas actividad, te avisaremos por aquí.",
             style = MaterialTheme.typography.bodyMedium.copy(color = colors.onSurfaceVariant)
         )
-        // estudiante: “botoncito” para **Configurar notificaciones** (permisos / categorías)
+        // “botoncito” para **Configurar notificaciones** (permisos / categorías)
     }
 }
 

@@ -7,10 +7,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -33,10 +31,12 @@ fun BottomNavigationBar(
     profileImageUrl: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val colors = MaterialTheme.colorScheme
+
     NavigationBar(
         modifier = modifier,
-        containerColor = Color.White,
-        contentColor = Color.Black,
+        containerColor = colors.surface,
+        contentColor = colors.onSurface,
         tonalElevation = 8.dp
     ) {
         items.forEach { item ->
@@ -57,10 +57,11 @@ fun BottomNavigationBar(
                         )
                     }
                 },
+                // Eliminamos el label para que no aparezca texto
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Black,
-                    unselectedIconColor = Color.Gray,
-                    indicatorColor = Color.Transparent
+                    selectedIconColor = colors.primary,
+                    unselectedIconColor = colors.onSurfaceVariant,
+                    indicatorColor = colors.primaryContainer
                 )
             )
         }
@@ -73,24 +74,27 @@ private fun IconWithBadge(
     badgeCount: Int,
     isSelected: Boolean
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Box {
         Icon(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(24.dp),
-            tint = if (isSelected) Color.Black else Color.Gray
+            tint = if (isSelected) colors.primary else colors.onSurfaceVariant
         )
 
         if (badgeCount > 0) {
             BadgedBox(
                 badge = {
                     Badge(
-                        containerColor = Color(0xFF8B4513) // Color marrón como en la imagen
+                        containerColor = colors.primary
                     ) {
                         Text(
                             text = badgeCount.toString(),
-                            color = Color.White,
-                            fontSize = 10.sp
+                            color = colors.onPrimary,
+                            fontSize = 10.sp,
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }
@@ -107,11 +111,16 @@ private fun ProfileIcon(
     imageUrl: String?,
     isSelected: Boolean
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .size(24.dp)
             .clip(CircleShape)
-            .background(Color.Gray.copy(alpha = 0.3f))
+            .background(
+                if (isSelected) colors.primaryContainer
+                else colors.surfaceVariant
+            )
     ) {
         if (imageUrl != null && imageUrl.isNotEmpty() && imageUrl != "https://example.com/profile.jpg") {
             AsyncImage(
@@ -127,7 +136,7 @@ private fun ProfileIcon(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(4.dp),
-                tint = if (isSelected) Color.Black else Color.Gray
+                tint = if (isSelected) colors.primary else colors.onSurfaceVariant
             )
         }
     }

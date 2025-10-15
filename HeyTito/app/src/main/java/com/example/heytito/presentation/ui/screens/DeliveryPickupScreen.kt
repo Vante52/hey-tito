@@ -21,32 +21,70 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveryPickupScreen(
-    onNavigate: () -> Unit = {},
+    onBackClick: () -> Unit = {},
     onCall: () -> Unit = {},
     onChat: () -> Unit = {},
-    onPrimaryCta: () -> Unit = {} // botoncito principal (“Marcar recogido” o “Confirmar entrega”)
+    onPrimaryCta: () -> Unit = {}, // botoncito principal (“Marcar recogido” o “Confirmar entrega”)
+    onNavigateClick: () ->Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
 
     Scaffold(
         containerColor = colors.background,
         topBar = {
-            // AppBar ligero con título centrado
-            CenterAlignedTopAppBar(
-                title = { Text("Entrega / Recogida", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = {
-                    // TODO(uni): si esta vista se abre modal, usar Close en vez de Back
-                    IconButton(onClick = { /* onBack */ }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+            // ===== Header unificado: título centrado + back + acción (más) =====
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                color = colors.surface,
+                tonalElevation = 1.dp,
+                shadowElevation = 1.dp
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    // Back
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = colors.onSurface
+                        )
                     }
-                },
-                actions = {
-                    // botoncito de overflow por si metemos “Cancelar viaje”, “Reasignar”, etc.
-                    IconButton(onClick = { /* TODO: menú */ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
+
+                    // Título centrado (misma tipografía que acordamos)
+                    Text(
+                        text = "Entrega / Recogida",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            // 22.sp si quieres forzar tamaño exacto:
+                            // fontSize = 22.sp,
+                            color = colors.onSurface
+                        ),
+                        maxLines = 1,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    // Acciones (derecha) — se mantiene tu botón de overflow
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { /* TODO: menú */ }) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Más opciones",
+                                tint = colors.onSurface
+                            )
+                        }
                     }
                 }
-            )
+            }
         }
     ) { inner ->
         Column(
@@ -103,7 +141,6 @@ fun DeliveryPickupScreen(
             }
 
             /* ───────────────────── Mapa (placeholder) ──────────────────── */
-            // color así de suave para que no “tape” el texto; usar onPrimaryContainer para contraste
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -123,7 +160,6 @@ fun DeliveryPickupScreen(
                         style = MaterialTheme.typography.titleMedium,
                         color = colors.onPrimaryContainer
                     )
-                    // TODO(uni): reemplazar por mapa real (Maps Compose); añadir “Recentrar” como fab
                 }
             }
 
@@ -197,14 +233,13 @@ fun DeliveryPickupScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = colors.onSurfaceVariant
                                 )
-                                // comentario: botoncito “Ver contacto” podría ir a la derecha si hace falta
                             }
                         }
                     }
 
                     Spacer(Modifier.height(12.dp))
 
-                    // ── Pasos (cajas pegadas entre sí, sin separaciones visuales)
+                    // ── Pasos
                     Column(Modifier.fillMaxWidth()) {
                         StepContainer {
                             TripStep(
@@ -216,7 +251,7 @@ fun DeliveryPickupScreen(
                                 showConnector = true
                             )
                         }
-                        Spacer(Modifier.height(0.dp)) // pegaditas
+                        Spacer(Modifier.height(0.dp))
                         StepContainer {
                             TripStep(
                                 stepNumber = "2",
@@ -237,12 +272,12 @@ fun DeliveryPickupScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OutlinedButton(
-                            onClick = onNavigate,
+                            onClick = onNavigateClick,
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
                             border = BorderStroke(1.dp, colors.onSurface.copy(alpha = 0.12f)),
                             shape = RoundedCornerShape(24.dp)
-                        ) { Text("Navegar") } // botoncito abrir Google Maps/Waze
+                        ) { Text("Navegar") }
 
                         OutlinedButton(
                             onClick = onCall,
@@ -250,7 +285,7 @@ fun DeliveryPickupScreen(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
                             border = BorderStroke(1.dp, colors.onSurface.copy(alpha = 0.12f)),
                             shape = RoundedCornerShape(24.dp)
-                        ) { Text("Llamar") } // botoncito llamar al cliente
+                        ) { Text("Llamar") }
 
                         OutlinedButton(
                             onClick = onChat,
@@ -258,12 +293,12 @@ fun DeliveryPickupScreen(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface),
                             border = BorderStroke(1.dp, colors.onSurface.copy(alpha = 0.12f)),
                             shape = RoundedCornerShape(24.dp)
-                        ) { Text("Chatear") } // botoncito chat interno
+                        ) { Text("Chatear") }
                     }
 
                     Spacer(Modifier.height(12.dp))
 
-                    // ── CTA principal (llenito) abajo bien visible
+                    // ── CTA principal
                     Button(
                         onClick = onPrimaryCta,
                         modifier = Modifier
@@ -272,7 +307,7 @@ fun DeliveryPickupScreen(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            "Marcar como recogido", // TODO(uni): cambiar a “Marcar como entregado” según etapa
+                            "Marcar como recogido", // o “Marcar como entregado” según etapa
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -369,11 +404,9 @@ fun TripStep(
                 style = MaterialTheme.typography.labelMedium,
                 color = colors.onSurfaceVariant
             )
-            // comentario: si el paso está activo, podríamos mostrar un mini botón “Marcar como hecho”
         }
     }
 }
-
 
 @Preview(showBackground = true, showSystemUi = true, name = "DeliveryPickup – Theme Preview")
 @Composable
