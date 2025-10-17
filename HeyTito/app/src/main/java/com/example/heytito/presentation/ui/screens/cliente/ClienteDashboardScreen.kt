@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.cliente
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

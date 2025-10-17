@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,7 +33,8 @@ import com.example.heytito.R
 @Composable
 fun RegisterScreen(
     onBackClick: () -> Unit = {},
-    onRegisterClick: () -> Unit = {}
+    onRegisterClick: () -> Unit = {},
+    onRoleClick: (String) -> Unit= {}
 ) {
     val colors = MaterialTheme.colorScheme
 
@@ -47,7 +48,7 @@ fun RegisterScreen(
     var selectedRole by remember { mutableStateOf("") }
 
     var isGenderDropdownExpanded by remember { mutableStateOf(false) }
-    var isRoleDropdownExpanded by remember { mutableStateOf(false) } // reservado si cambias a dropdown
+    var isRoleDropdownExpanded by remember { mutableStateOf(false) } // reservado si cambio a dropdown
 
     val showPassword = remember { mutableStateOf(false) } // botoncito ojo
 
@@ -312,7 +313,10 @@ fun RegisterScreen(
                 roleOptions.forEach { role ->
                     FilterChip(
                         selected = selectedRole == role,
-                        onClick = { selectedRole = role },
+                        onClick = {
+                            selectedRole = role           // ← actualiza estado local
+                            onRoleClick(role)             // ← por si lo quieres escuchar arriba
+                        },
                         label = { Text(role) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = colors.primary,
@@ -357,7 +361,12 @@ fun RegisterScreen(
 
             // Botón Registrarse
             Button(
-                onClick = onRegisterClick,
+                onClick = {
+                    val role = if (selectedRole.isBlank()) "Cliente" else selectedRole
+                    onRegisterClick() // si necesitas hacer algo antes
+                    // ← navega directo con la ruta helper
+                    // (si navegas desde arriba, puedes mover esto a MainNavigation)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),

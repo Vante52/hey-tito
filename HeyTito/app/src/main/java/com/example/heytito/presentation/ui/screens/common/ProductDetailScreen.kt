@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,13 +13,13 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -52,7 +52,7 @@ data class ProductDetail(
 
 data class DetailSection(
     val title: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val isExpandable: Boolean = false,
     val content: String = ""
 )

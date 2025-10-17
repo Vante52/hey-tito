@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

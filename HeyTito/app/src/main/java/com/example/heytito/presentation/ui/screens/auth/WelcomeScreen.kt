@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource

@@ -1,5 +1,6 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -406,7 +408,7 @@ private fun FilterCategoryChip(
         color = if (category.isSelected) colors.primary else colors.surface,
         shape = RoundedCornerShape(20.dp),
         border = if (!category.isSelected)
-            androidx.compose.foundation.BorderStroke(1.dp, colors.outline)
+            BorderStroke(1.dp, colors.outline)
         else null
     ) {
         Box(
@@ -435,7 +437,7 @@ private fun FilterTagChipThemed(
         modifier = Modifier.height(32.dp),
         color = colors.primaryContainer,
         shape = RoundedCornerShape(16.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline)
+        border = BorderStroke(1.dp, colors.outline)
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -458,8 +460,8 @@ private fun FilterColorChip(
 ) {
     val colors = MaterialTheme.colorScheme
     //   estos sí llevan color “fuerte” para representar el color del producto
-    val bg = filter.colorArgb?.let { androidx.compose.ui.graphics.Color(it) } ?: colors.surfaceVariant
-    val fg = filter.textColorArgb?.let { androidx.compose.ui.graphics.Color(it) }
+    val bg = filter.colorArgb?.let { Color(it) } ?: colors.surfaceVariant
+    val fg = filter.textColorArgb?.let { Color(it) }
         ?: (if (filter.colorArgb == null) colors.onSurfaceVariant else colors.onPrimary)
 
     Surface(
@@ -468,7 +470,7 @@ private fun FilterColorChip(
         color = bg,
         shape = RoundedCornerShape(16.dp),
         border = if (filter.colorArgb == null)
-            androidx.compose.foundation.BorderStroke(1.dp, colors.outline)
+            BorderStroke(1.dp, colors.outline)
         else null
     ) {
         Box(
@@ -498,7 +500,7 @@ private fun PriceRangeChip(
         modifier = modifier.height(36.dp),
         color = colors.surface,
         shape = RoundedCornerShape(18.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline)
+        border = BorderStroke(1.dp, colors.outline)
     ) {
         Box(
             contentAlignment = Alignment.Center,

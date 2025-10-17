@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.compose.heytitoTheme
 
 // ----------------------------
 // Modelo
@@ -323,7 +324,7 @@ private fun MessageBubble(
 @Preview(showBackground = true, name = "Chat – Light (Brand)")
 @Composable
 private fun ChatPreviewLight() {
-    com.example.compose.heytitoTheme(darkTheme = false, dynamicColor = false) {
+    heytitoTheme(darkTheme = false, dynamicColor = false) {
         ChatScreen()
     }
 }
@@ -331,7 +332,7 @@ private fun ChatPreviewLight() {
 @Preview(showBackground = true, name = "Chat – Dark (Brand)")
 @Composable
 private fun ChatPreviewDark() {
-    com.example.compose.heytitoTheme(darkTheme = true, dynamicColor = false) {
+    heytitoTheme(darkTheme = true, dynamicColor = false) {
         ChatScreen()
     }
 }

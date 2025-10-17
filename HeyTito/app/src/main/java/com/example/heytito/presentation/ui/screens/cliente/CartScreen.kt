@@ -1,5 +1,6 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.cliente
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -216,7 +217,7 @@ private fun CartItemCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
     ) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -257,7 +258,7 @@ private fun CartItemCard(
                     color = colors.surface,
                     tonalElevation = 0.dp,
                     shadowElevation = 0.dp,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
+                    border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
@@ -279,7 +280,7 @@ private fun Pill(text: String) {
         color = colors.surface,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
     ) {
         Text(
             text,
@@ -302,7 +303,7 @@ private fun QuantityControl(qty: Int, onMinus: () -> Unit, onPlus: () -> Unit) {
             modifier = Modifier.widthIn(min = 40.dp),
             shape = RoundedCornerShape(8.dp),
             color = colors.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
+            border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
         ) {
             Text(
                 "$qty",
@@ -323,7 +324,7 @@ private fun SmallSquareButton(text: String, onClick: () -> Unit) {
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         color = colors.surface,
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.35f))
     ) {
         Text(
             text,
@@ -348,7 +349,7 @@ private fun CouponCard(
         colors = CardDefaults.cardColors(containerColor = colors.surface),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(0.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.25f))
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.25f))
     ) {
         Column(Modifier.padding(12.dp)) {
             Text(
@@ -403,7 +404,7 @@ private fun SummaryCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(0.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline.copy(alpha = 0.25f))
+        border = BorderStroke(1.dp, colors.outline.copy(alpha = 0.25f))
     ) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text("Resumen", style = MaterialTheme.typography.titleMedium, color = colors.onSurface)

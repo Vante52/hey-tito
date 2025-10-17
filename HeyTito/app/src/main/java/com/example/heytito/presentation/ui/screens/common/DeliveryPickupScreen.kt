@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.compose.heytitoTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -411,7 +412,7 @@ fun TripStep(
 @Preview(showBackground = true, showSystemUi = true, name = "DeliveryPickup – Theme Preview")
 @Composable
 private fun DeliveryPickupPreview() {
-    com.example.compose.heytitoTheme {
+    heytitoTheme {
         DeliveryPickupScreen()
     }
 }

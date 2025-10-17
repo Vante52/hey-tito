@@ -1,4 +1,4 @@
-package com.example.heytito.presentation.ui.screens
+package com.example.heytito.presentation.ui.screens.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

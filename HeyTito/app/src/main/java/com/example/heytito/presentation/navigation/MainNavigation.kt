@@ -6,7 +6,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -15,7 +17,30 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.heytito.presentation.ui.components.BottomNavItem
 import com.example.heytito.presentation.ui.components.BottomNavigationBar
-import com.example.heytito.presentation.ui.screens.*
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.heytito.presentation.ui.screens.vendedor.CreateProductScreen
+import com.example.heytito.presentation.ui.screens.vendedor.VendedorDashboardScreen
+import com.example.heytito.presentation.ui.screens.auth.LoginScreen
+import com.example.heytito.presentation.ui.screens.auth.RegisterScreen
+import com.example.heytito.presentation.ui.screens.auth.WelcomeScreen
+import com.example.heytito.presentation.ui.screens.cliente.CartScreen
+import com.example.heytito.presentation.ui.screens.cliente.ClienteDashboardScreen
+import com.example.heytito.presentation.ui.screens.cliente.FavoritesScreen
+import com.example.heytito.presentation.ui.screens.cliente.PreferencesFlowScreen
+import com.example.heytito.presentation.ui.screens.cliente.ProfileScreen
+import com.example.heytito.presentation.ui.screens.common.ChatListScreen
+import com.example.heytito.presentation.ui.screens.common.ChatScreen
+import com.example.heytito.presentation.ui.screens.common.DeliveryPickupScreen
+import com.example.heytito.presentation.ui.screens.common.NotificationsScreen
+import com.example.heytito.presentation.ui.screens.common.OrdersScreen
+import com.example.heytito.presentation.ui.screens.common.ProductDetailScreen
+import com.example.heytito.presentation.ui.screens.common.SearchScreen
+import com.example.heytito.presentation.ui.screens.common.StoreProfileScreen
+import com.example.heytito.presentation.ui.screens.common.TitoChatScreen
+import com.example.heytito.presentation.ui.screens.vendedor.MyProductsScreen
+import com.example.heytito.presentation.ui.screens.vendedor.StatisticsScreen
+
 
 @Composable
 fun MainNavigation() {
@@ -29,16 +54,19 @@ fun MainNavigation() {
             AppScreens.Cart.route,
             AppScreens.Notifications.route,
             AppScreens.Profile.route,
-            AppScreens.Home.route,
             AppScreens.DeliveryPickup.route,
             AppScreens.Favorites.route
         )
+    }
+    val homeRouteForBar = when {
+        currentRoute?.startsWith("home/Vendedor") == true -> AppScreens.Home.withRole("Vendedor")
+        else -> AppScreens.Home.withRole("Cliente")
     }
 
     val bottomNavItems = remember {
         listOf(
             BottomNavItem(
-                route = AppScreens.Home.route,
+                route = homeRouteForBar,                 // ← Home según pantalla actual
                 icon = Icons.Default.Home,
                 label = "Home"
             ),
@@ -69,16 +97,15 @@ fun MainNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in bottomBarRoutes) {
+            if (currentRoute in bottomBarRoutes||
+                currentRoute?.startsWith("home/") == true) {
                 BottomNavigationBar(
                     items = bottomNavItems,
-                    currentRoute = currentRoute ?: AppScreens.Home.route,
+                    currentRoute = currentRoute ?: homeRouteForBar,
                     onItemClick = { route ->
                         if (currentRoute != route) {
                             navController.navigate(route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -98,34 +125,25 @@ fun MainNavigation() {
             composable(AppScreens.Welcome.route) {
                 WelcomeScreen(
                     onCreateAccount = { navController.navigate(AppScreens.Register.route) },
-                    onContinueWithGoogle = {navController.navigate(AppScreens.Login.route)},
-                    onContinueWithApple = {navController.navigate((AppScreens.Login.route))}
+                    onContinueWithGoogle = { navController.navigate(AppScreens.Login.route) },
+                    onContinueWithApple = { navController.navigate((AppScreens.Login.route)) }
                     /*onLogin = {  si existe login: navController.navigate(AppScreens.Home)  }*/
                 )
             }
 
             composable (AppScreens.Login.route) {
-                LoginScreen (
-                    onLoginClick = {navController.navigate(AppScreens.Home.route)},
-                    onBackClick = {navController.popBackStack()},
+                LoginScreen(
+                    onLoginClick = { navController.navigate(AppScreens.Home.withRole("Cliente")) }, //TODO: Logica para manejar el rol del usuario cuando ya hayan modelos
+                    onBackClick = { navController.popBackStack() },
                     onForgotPasswordClick = {}
                 )
             }
             composable(AppScreens.Register.route) {
+                var role by remember { mutableStateOf("Cliente") } // por defecto
                 RegisterScreen(
-                    onRegisterClick = { navController.navigate(AppScreens.Preferences.route) },
-//                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(AppScreens.Preferences.route) {
-                PreferencesScreen(
-                    onContinueClick = { allSelections ->
-                        navController.navigate(AppScreens.Home.route) {
-                            popUpTo(AppScreens.Welcome.route) { inclusive = true }
-                            launchSingleTop = true
-                        }
-                    },
-//                    onBack = { navController.popBackStack() }
+                    onRoleClick = { role = it },
+                    onRegisterClick = { navController.navigate(AppScreens.Home.withRole(role)) },
+                    onBackClick = { navController.popBackStack() }
                 )
             }
             composable(AppScreens.Preferences.route) {
@@ -145,22 +163,39 @@ fun MainNavigation() {
 
 
             // Cliente (Home) + principales
-            composable(AppScreens.Home.route) {
-                // Corrige si tu nombre real es ClienteDashboardScreen (ojo con la "i")
-                ClienteDashboardScreen(
-                    onBackClick = { navController.popBackStack() },
-                    onFollowClick = { /* ... */ },
-                    onProductClick = {navController.navigate(AppScreens.ProductDetail.route)},
-                        //{ id -> /* navController.navigate("product/$id") */ },
-                    onStoreClick = { navController.navigate(AppScreens.StoreProfile.route) },
-                    onFilterClick = { navController.navigate(AppScreens.Search.route) }
-                )
+            composable(
+                route = AppScreens.Home.route,
+                arguments = listOf(navArgument("role") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val role = backStackEntry.arguments?.getString("role") ?: "Cliente"
+                if (role.equals("Vendedor", ignoreCase = true)) {
+                    VendedorDashboardScreen(
+                        onEnviosClick = {},
+                        onComentariosClick = {},
+                        onEstadisticasClick = {navController.navigate(AppScreens.Estadisticas.route)},
+                        onMisPedidosClick = {},
+                        onAgregarProductoClick = {navController.navigate(AppScreens.CreateProduct.route)},
+                        onMostrarProductosClick = {navController.navigate(AppScreens.MyProducts.route)}
+                    )
+                } else {
+                    ClienteDashboardScreen(
+                        onBackClick = { navController.popBackStack() },
+                        onFollowClick = { },
+                        onProductClick = { navController.navigate(AppScreens.ProductDetail.route) },
+                        onStoreClick = { navController.navigate(AppScreens.StoreProfile.route) },
+                        onFilterClick = { navController.navigate(AppScreens.Search.route) },
+                        onOpenComments = { /* ... */ },
+                        onAddToCart = { /* ... */ }
+                    )
+                }
             }
+
             composable(AppScreens.Search.route) {
                 SearchScreen(
-                    onBackClick= { navController.popBackStack() },
+                    onBackClick = { navController.popBackStack() },
                     onSearchClick = { /* productId ->
-                        navController.navigate("${AppScreens.ProductDetail}/$productId")
+                        navControllimport com.example.compose.heytitoTheme
+er.navigate("${AppScreens.ProductDetail}/$productId")
                        */ navController.navigate(AppScreens.Home.route)
                     }
                 )
@@ -188,15 +223,14 @@ fun MainNavigation() {
 
             composable(AppScreens.DeliveryPickup.route) {
                 DeliveryPickupScreen(
-                    onBackClick = {navController.popBackStack()}
+                    onBackClick = { navController.popBackStack() }
                 )
             }
 
             // Tabs de la bottom bar
             composable(AppScreens.Chat.route) {
                 ChatScreen(
-                    onBackClick = { navController.popBackStack() }
-                )
+                    onBackClick = { navController.popBackStack() })
             }
             // MainNavigation.kt (dentro del NavHost)
             composable(AppScreens.ChatList.route) {
@@ -231,7 +265,7 @@ fun MainNavigation() {
 
             composable (AppScreens.Favorites.route ){
                 FavoritesScreen(
-                    onBack = {navController.popBackStack()},
+                    onBack = { navController.popBackStack() },
                     onCartClick = {},
                     onAddCategory = {},
                     onOpenProduct = {}
@@ -239,22 +273,48 @@ fun MainNavigation() {
             }
 
 
-            composable(AppScreens.Notifications.route) { NotificationsScreen(
-                onNotificationClick = {},
-                onMarkAllRead = {}
-            ) }
+            composable(AppScreens.Notifications.route) {
+                NotificationsScreen(
+                    onNotificationClick = {},
+                    onMarkAllRead = {}
+                )
+            }
 
-            composable(AppScreens.Profile.route) { ProfileScreen(
-                onBackClick = {navController.popBackStack()},
-                onSavedClick = {navController.navigate(AppScreens.Favorites.route)},
-                onLogoutClick = {navController.navigate(AppScreens.Welcome.route)}
-            ) }
+            composable(AppScreens.Profile.route) {
+                ProfileScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onSavedClick = { navController.navigate(AppScreens.Favorites.route) },
+                    onLogoutClick = { navController.navigate(AppScreens.Welcome.route) }
+                )
+            }
 
-            composable(AppScreens.StoreProfile.route) { StoreProfileScreen(
-                onBackClick = {navController.popBackStack()},
-                onFollowClick = {},
-                onProductClick = {}
-            ) }
+            composable(AppScreens.StoreProfile.route) {
+                StoreProfileScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onFollowClick = {},
+                    onProductClick = {}
+                )
+            }
+            composable (AppScreens.Estadisticas.route ){
+                StatisticsScreen(
+                    onBackClick = {navController.popBackStack()}
+                )
+            }
+            composable(AppScreens.CreateProduct.route){
+                CreateProductScreen (
+                    onCloseClick = {navController.popBackStack()},
+                    onPublishClick = {},
+                    onSaveDraftClick = {}
+                )
+            }
+            composable (AppScreens.MyProducts.route){
+                MyProductsScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onAddProductClick = { navController.navigate(AppScreens.CreateProduct.route) }
+                    //onProductActionClick = {}
+                )
+            }
         }
     }
 }
+
