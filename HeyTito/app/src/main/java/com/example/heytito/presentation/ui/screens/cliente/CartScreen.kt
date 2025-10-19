@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.compose.heytitoTheme
 
-/* ---------------------------- Model / Mock data ---------------------------- */
+/*  Model / Mock data  */
 
 data class CartItem(
     val id: String,
@@ -42,7 +42,7 @@ private fun mockCart(): List<CartItem> = listOf(
     CartItem("2", "Pantalón Wide Leg", "@lunaurban", 129_900, "S", "Beige"),
 )
 
-/* --------------------------------- Screen --------------------------------- */
+/* ----- Screen ----- */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,7 +202,7 @@ fun CartScreen(
     }
 }
 
-/* --------------------------------- Items --------------------------------- */
+/* ----- Items ----- */
 
 @Composable
 private fun CartItemCard(
@@ -335,7 +335,7 @@ private fun SmallSquareButton(text: String, onClick: () -> Unit) {
     }
 }
 
-/* --------------------------------- Cupón --------------------------------- */
+/* ----- Cupón ----- */
 
 @Composable
 private fun CouponCard(
@@ -390,7 +390,7 @@ private fun CouponCard(
     }
 }
 
-/* -------------------------------- Resumen -------------------------------- */
+/* ---- Resumen ---- */
 
 @Composable
 private fun SummaryCard(
@@ -454,7 +454,7 @@ private fun RowLine(label: String, value: String) {
 private fun formatPrice(value: Int): String =
     "%,d".format(value).replace(',', '.')
 
-/* --------------------------------- Preview -------------------------------- */
+/* Preview */
 
 @Preview(showBackground = true, showSystemUi = true, device = "id:pixel_6")
 @Composable

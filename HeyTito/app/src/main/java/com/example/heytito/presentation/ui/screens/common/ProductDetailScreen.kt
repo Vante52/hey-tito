@@ -31,9 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
 
-// ────────────────────────────────────────────────────────────────────────────────
 // DATA
-// ────────────────────────────────────────────────────────────────────────────────
 
 data class ProductDetail(
     val title: String,
@@ -68,9 +66,8 @@ data class ProductSocial(
     val caption: String = "" // breve descripción tipo IG
 )
 
-// ────────────────────────────────────────────────────────────────────────────────
 // SCREEN
-// ────────────────────────────────────────────────────────────────────────────────
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -373,7 +370,6 @@ fun ProductDetailScreen(
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
 
 @Composable
 private fun DetailSectionItem(
@@ -412,9 +408,7 @@ private fun DetailSectionItem(
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
 // PREVIEWS
-// ────────────────────────────────────────────────────────────────────────────────
 
 @Preview(showBackground = true, name = "Product Detail – Light")
 @Composable
