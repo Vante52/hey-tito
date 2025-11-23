@@ -27,12 +27,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
 import com.example.compose.heytitoTheme
+import com.example.heytito.R
 
 // ────────────────────────────────────────────────────────────────────────────────
 // DATA
@@ -56,6 +62,25 @@ data class StoreProductList(
     val comments: Int = 0,
     val hasDiscount: Boolean = false
 )
+
+data class TitoRecommendation(
+    val id: String,
+    val productName: String,
+    val price: String,
+    val imageResourceName: String // Nombre del recurso de imagen (ej: "imagentito1")
+)
+
+sealed class FeedItem {
+    abstract val id: String
+
+    data class Product(val product: StoreProductList) : FeedItem() {
+        override val id: String = product.id
+    }
+
+    data class TitoRec(val recommendation: TitoRecommendation) : FeedItem() {
+        override val id: String = recommendation.id
+    }
+}
 
 // ────────────────────────────────────────────────────────────────────────────────
 // SCREEN
@@ -88,6 +113,27 @@ fun ClienteDashboardScreen(
             StoreProductList("5", "UrbanX", "$149.900", likes = 3, comments = 0),
             StoreProductList("6", "Minimal Co.", "$209.900", likes = 28, comments = 2)
         )
+    }
+
+    val titoRecommendations = remember {
+        listOf(
+            TitoRecommendation("tito1", "Camiseta Vintage", "$33.543", "imagentito1"),
+            TitoRecommendation("tito2", "Jeans Clásicos", "$89.900", "imagentito2"),
+            TitoRecommendation("tito3", "Chaqueta Denim", "$129.900", "imagentito3")
+        )
+    }
+
+    val feedItems = remember(products, titoRecommendations) {
+        val combined = mutableListOf<FeedItem>()
+        var titoIndex = 0
+        products.forEachIndexed { productIndex, product ->
+            combined.add(FeedItem.Product(product))
+            if (productIndex < products.size - 1 && titoIndex < titoRecommendations.size) {
+                combined.add(FeedItem.TitoRec(titoRecommendations[titoIndex % titoRecommendations.size]))
+                titoIndex++
+            }
+        }
+        combined
     }
 
     Scaffold(
@@ -136,16 +182,25 @@ fun ClienteDashboardScreen(
                 Spacer(Modifier.height(4.dp))
             }
 
-            // Feed estilo Instagram
-            items(products, key = { it.id }) { product ->
-                InstaPostCard(
-                    product = product,
-                    onAvatarClick = onStoreClick,
-                    onThreeDotsClick = onStoreClick,
-                    onOpenComments = { onOpenComments(product.id) },
-                    onAddToCart = { onAddToCart(product.id) },
-                    onImageClick = { onProductClick(product.id) }
-                )
+            items(feedItems, key = { it.id }) { item ->
+                when (item) {
+                    is FeedItem.Product -> {
+                        InstaPostCard(
+                            product = item.product,
+                            onAvatarClick = onStoreClick,
+                            onThreeDotsClick = onStoreClick,
+                            onOpenComments = { onOpenComments(item.product.id) },
+                            onAddToCart = { onAddToCart(item.product.id) },
+                            onImageClick = { onProductClick(item.product.id) }
+                        )
+                    }
+                    is FeedItem.TitoRec -> {
+                        TitoRecommendationCard(
+                            recommendation = item.recommendation,
+                            onProductClick = { onProductClick(item.recommendation.id) }
+                        )
+                    }
+                }
             }
         }
     }
@@ -375,6 +430,161 @@ fun PagerIndicator(pageCount: Int, currentPageIndex: Int, modifier: Modifier = M
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun getDrawableResourceId(imageName: String): Int {
+    val context = LocalContext.current
+    return remember(imageName) {
+        try {
+            val cleanName = imageName.removeSuffix(".png")
+            var resourceId = context.resources.getIdentifier(
+                cleanName,
+                "drawable",
+                context.packageName
+            )
+
+            if (resourceId == 0) {
+                try {
+                    val drawableClass = R.drawable::class.java
+                    val field = drawableClass.getField(cleanName)
+                    resourceId = field.getInt(null)
+                } catch (e: Exception) {
+
+                }
+            }
+
+            resourceId
+        } catch (e: Exception) {
+            0
+        }
+    }
+}
+
+@Composable
+private fun TitoRecommendationCard(
+    recommendation: TitoRecommendation,
+    onProductClick: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val imageResourceId = getDrawableResourceId(recommendation.imageResourceName)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        shape = RoundedCornerShape(0.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.image6),
+                contentDescription = "Tito",
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentWidth()
+                    .shadow(
+                        elevation = 2.dp,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .background(
+                        color = Color(0xFFE8E0E8),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Hey, encontré algo",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2D1B2D)
+                        )
+                        Text(
+                            text = "que te puede gustar",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2D1B2D)
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = recommendation.productName,
+                            fontSize = 13.sp,
+                            color = Color(0xFF6B6B6B)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = recommendation.price,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2D1B2D)
+                        )
+                    }
+
+                    if (imageResourceId != 0) {
+                        Image(
+                            painter = painterResource(id = imageResourceId),
+                            contentDescription = recommendation.productName,
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onProductClick() },
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    Color.White,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clickable { onProductClick() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFE0E0E0).copy(alpha = 0.3f))
+                            )
+                            Text(
+                                text = "Imagen",
+                                fontSize = 11.sp,
+                                color = Color(0xFF9E9E9E)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        Divider(
+            thickness = 0.5.dp,
+            color = colors.outlineVariant,
+            modifier = Modifier.padding(top = 8.dp)
+        )
     }
 }
 
