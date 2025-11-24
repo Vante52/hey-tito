@@ -1,5 +1,6 @@
 package com.example.heytito.presentation.ui.screens.common
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,9 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.heytito.R
 
 // --------- Modelo ----------
 data class ChatRow(
@@ -29,7 +34,8 @@ data class ChatRow(
     val time: String? = null,   // "09:18", "Ayer", "23 Ago"
     val unread: Int = 0,
     val pinned: Boolean = false,
-    val isTito: Boolean = false
+    val isTito: Boolean = false,
+    @DrawableRes val avatarResId: Int? = null // 👈 avatar por drawable
 )
 
 // --------- Pantalla ----------
@@ -46,22 +52,20 @@ fun ChatListScreen(
     var query by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Todos") }
 
-    // Ejemplo de chats
+    // Ejemplo de chats (avatares: slash, maluma, diomedes)
     val chats = remember {
         listOf(
-            ChatRow("1","Atelier Nova","Claro, te paso medidas...", time = "09:18", unread = 3),
-            ChatRow("2","Laura P.","Recibí el pedido, gracias :)", time = "Ayer"),
-            ChatRow("3","Luna Urban","Hicimos el envío hoy", time = "23 Ago", unread = 1),
-            ChatRow("4","Carlos D.","¿Tienen talla S en azul?", time = "22 Ago")
+            ChatRow("1","Atelier Nova","Claro, te paso medidas...", time = "09:18", unread = 3, avatarResId = R.drawable.slash),
+            ChatRow("2","Laura P.","Recibí el pedido, gracias :)", time = "Ayer", avatarResId = R.drawable.maluma),
+            ChatRow("3","Luna Urban","Hicimos el envío hoy", time = "23 Ago", unread = 1, avatarResId = R.drawable.shaki),
+            ChatRow("4","Carlos D.","¿Tienen talla S en azul?", time = "22 Ago", avatarResId =  R.drawable.diomedes)
         )
     }
 
     Scaffold(
         topBar = {
-            // ===== Header unificado: título centrado + back + acciones (color/elevación como Notificaciones) =====
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 color = colors.surface,
                 tonalElevation = 1.dp,
                 shadowElevation = 1.dp
@@ -71,40 +75,19 @@ fun ChatListScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
-                    // Back (izquierda)
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Atrás",
-                            tint = colors.onSurface
-                        )
+                    IconButton(onClick = onBackClick, modifier = Modifier.align(Alignment.CenterStart)) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = colors.onSurface)
                     }
-
-                    // Título centrado (misma tipografía/tamaño)
                     Text(
                         text = "Chats",
                         style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 22.sp,
-                            color = colors.onSurface
+                            fontWeight = FontWeight.SemiBold, fontSize = 22.sp, color = colors.onSurface
                         ),
                         modifier = Modifier.align(Alignment.Center)
                     )
-
-                    // Acciones (derecha) — se mantienen
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.align(Alignment.CenterEnd), verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = onMoreClick) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Más",
-                                tint = colors.onSurface
-                            )
+                            Icon(Icons.Default.MoreVert, contentDescription = "Más", tint = colors.onSurface)
                         }
                     }
                 }
@@ -146,7 +129,8 @@ fun ChatListScreen(
                 title = "Tito",
                 subtitle = "¿Necesitas algún consejo?",
                 pinned = true,
-                isTito = true
+                isTito = true,
+                avatarResId = R.drawable.tito // 👈 avatar de Tito
             )
 
             // Lista
@@ -166,7 +150,7 @@ fun ChatListScreen(
                 items(chats) { row ->
                     ChatListCard(
                         row = row,
-                        onClick = { onOpenChat(row.id, false) }  // 👈 resto => false
+                        onClick = { onOpenChat(row.id, false) }
                     )
                 }
                 // Botón Nuevo chat al final
@@ -220,17 +204,29 @@ private fun TitoPinnedCard(
             .clickable(onClick = onClick)
     ) {
         ListItem(
-            // Avatar/placeholder listo para imagen
             leadingContent = {
                 Box(
                     Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(colors.surfaceVariant),
-                    contentAlignment = Alignment.Center
                 ) {
-                    // aquí luego cargas la foto de Tito con AsyncImage(...)
-                    // mientras, un círculo de estado (online)
+                    // Imagen de Tito
+                    val avatar = row.avatarResId
+                    if (avatar != null) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = avatar),
+                            contentDescription = "Avatar Tito",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(colors.surfaceVariant)
+                        )
+                    }
+                    // Punto de estado (online)
                     Box(
                         Modifier
                             .align(Alignment.TopEnd)
@@ -240,21 +236,14 @@ private fun TitoPinnedCard(
                     )
                 }
             },
-            headlineContent = {
-                Text(row.title, fontWeight = FontWeight.SemiBold)
-            },
+            headlineContent = { Text(row.title, fontWeight = FontWeight.SemiBold) },
             supportingContent = { Text(row.subtitle) },
             trailingContent = {
-                // Chip “Fijado”
                 AssistChip(
                     onClick = onClick,
                     label = { Text("Fijado") },
                     leadingIcon = {
-                        Icon(
-                            Icons.Default.PushPin,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Icon(Icons.Default.PushPin, contentDescription = null, modifier = Modifier.size(16.dp))
                     }
                 )
             }
@@ -277,17 +266,29 @@ private fun ChatListCard(
     ) {
         ListItem(
             leadingContent = {
-                // Placeholder de imagen (48dp) — listo para tu AsyncImage
                 Box(
                     Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(colors.surfaceVariant)
-                )
+                ) {
+                    val avatar = row.avatarResId
+                    if (avatar != null) {
+                        androidx.compose.foundation.Image(
+                            painter = painterResource(id = avatar),
+                            contentDescription = "Avatar de ${row.title}",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(colors.surfaceVariant)
+                        )
+                    }
+                }
             },
-            headlineContent = {
-                Text(row.title, fontWeight = FontWeight.SemiBold)
-            },
+            headlineContent = { Text(row.title, fontWeight = FontWeight.SemiBold) },
             supportingContent = { Text(row.subtitle) },
             trailingContent = {
                 Column(

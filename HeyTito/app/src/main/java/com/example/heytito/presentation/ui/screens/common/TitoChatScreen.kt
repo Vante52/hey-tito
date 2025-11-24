@@ -1,7 +1,10 @@
 package com.example.heytito.presentation.ui.screens.common
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image as FImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,13 +12,18 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.heytito.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,10 +37,9 @@ fun TitoChatScreen(
     Scaffold(
         containerColor = colors.background,
         topBar = {
-            // Header unificado: fondo surface, título centrado, back y acciones
+            // Header unificado
             Surface(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 color = colors.surface,
                 tonalElevation = 1.dp,
                 shadowElevation = 1.dp
@@ -42,7 +49,6 @@ fun TitoChatScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    // Back
                     IconButton(
                         onClick = onBackClick,
                         modifier = Modifier.align(Alignment.CenterStart)
@@ -50,7 +56,6 @@ fun TitoChatScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
 
-                    // Título centrado (+ estado en línea como subtítulo pequeño)
                     Column(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -71,11 +76,8 @@ fun TitoChatScreen(
                         )
                     }
 
-                    // Acciones (más opciones)
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        IconButton(onClick = { /* TODO: abrir menú */ }) {
+                    Row(modifier = Modifier.align(Alignment.CenterEnd)) {
+                        IconButton(onClick = { /* menú */ }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "Más opciones")
                         }
                     }
@@ -90,20 +92,28 @@ fun TitoChatScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Foto del usuario enviada (placeholder)
+            // ✅ MANTIENE el placeholder (mismo marco), pero muestra la imagen "camisa"
             RoundedImagePlaceholder(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .size(180.dp)
+                    .size(180.dp),
+                resId = R.drawable.camisa
             )
 
             // Mensaje del usuario
             UserBubble("¿Sabes dónde puedo conseguir algo similar?")
 
-            // Respuesta de Tito
+            // Respuesta de Tito (texto)
             TitoBubble("Pues claro, ¡qué chimba de prenda! 😎")
 
-            // Tarjeta de recomendación (como en el mock)
+            // ✅ MANTIENE el placeholder (mismo marco), con la imagen "encontrada"
+            TitoImageMessage(
+                resId = R.drawable.encontrada,
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+            )
+
+            // Tarjeta de recomendación (mini preview con la misma imagen "encontrada")
             RecommendationCard(
                 title = "Camisa Grid Roja",
                 handle = "@urbanx",
@@ -134,8 +144,14 @@ fun TitoChatScreen(
     }
 }
 
+/* ---------- PLACEHOLDER CON OPCIONAL IMAGEN (MISMO ESTILO DE ANTES) ---------- */
+
 @Composable
-private fun RoundedImagePlaceholder(modifier: Modifier = Modifier) {
+private fun RoundedImagePlaceholder(
+    modifier: Modifier = Modifier,
+    @DrawableRes resId: Int? = null,                  // si viene, se muestra la imagen dentro del mismo marco
+    contentScale: ContentScale = ContentScale.Crop
+) {
     val colors = MaterialTheme.colorScheme
     Box(
         modifier = modifier
@@ -143,9 +159,26 @@ private fun RoundedImagePlaceholder(modifier: Modifier = Modifier) {
             .background(colors.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
-        Icon(Icons.Filled.Image, contentDescription = null, tint = colors.onSurfaceVariant)
+        if (resId != null) {
+            FImage(
+                painter = painterResource(id = resId),
+                contentDescription = null,
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(RoundedCornerShape(16.dp)),   // respeta esquinas
+                contentScale = contentScale
+            )
+        } else {
+            Icon(
+                Icons.Filled.Image,                    // icono (como antes)
+                contentDescription = null,
+                tint = colors.onSurfaceVariant
+            )
+        }
     }
 }
+
+/* ---------- Burbujas ---------- */
 
 @Composable
 private fun UserBubble(text: String) {
@@ -171,6 +204,24 @@ private fun TitoBubble(text: String) {
     }
 }
 
+/* ---------- Mensaje visual de Tito reutilizando el mismo placeholder ---------- */
+
+@Composable
+private fun TitoImageMessage(
+    @DrawableRes resId: Int,
+    modifier: Modifier = Modifier
+) {
+    Row(Modifier.fillMaxWidth()) {
+        RoundedImagePlaceholder(
+            resId = resId,
+            modifier = modifier
+                .clip(RoundedCornerShape(16.dp))       // mismo marco
+        )
+    }
+}
+
+/* ---------- Tarjeta de recomendación (mini preview mantiene el placeholder) ---------- */
+
 @Composable
 private fun RecommendationCard(
     title: String,
@@ -189,7 +240,14 @@ private fun RecommendationCard(
     ) {
         Column(Modifier.padding(12.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                RoundedImagePlaceholder(modifier = Modifier.size(44.dp))
+                // ✅ mini preview dentro del mismo placeholder, con "encontrada"
+                RoundedImagePlaceholder(
+                    resId = R.drawable.encontrada,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
                 Column(Modifier.weight(1f)) {
                     Text(title, fontWeight = FontWeight.SemiBold)
                     Text(handle, color = colors.onSurfaceVariant, fontSize = 12.sp)
@@ -202,10 +260,7 @@ private fun RecommendationCard(
                 label = { Text("$rating ★") },
                 modifier = Modifier.padding(top = 4.dp)
             )
-            Text(
-                "Creo que esta te quedará brutal 🔥",
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            Text("Creo que esta te quedará brutal 🔥", modifier = Modifier.padding(vertical = 8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(
                     onClick = onViewProduct,

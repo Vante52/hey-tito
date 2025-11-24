@@ -38,66 +38,32 @@ import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
 import com.example.heytito.R
 
-// DATA
-
-data class ProductDetail(
-    val title: String,
-    val originalPrice: String,
-    val currentPrice: String,
-    val isOnSale: Boolean,
-    val brand: String,
-    val size: String,
-    val category: String,
-    val condition: String,
-    val color: String,
-    val mascotMessage: String,
-    val sellerName: String,
-    val sellerImage: String? = null
-)
-
-data class DetailSection(
-    val title: String,
-    val icon: ImageVector,
-    val isExpandable: Boolean = false,
-    val content: String = ""
-)
-
-data class ProductComment(val user: String, val text: String)
-
-data class ProductSocial(
-    val likes: Int,
-    val comments: List<ProductComment>,
-    val isLiked: Boolean = false,
-    val isBookmarked: Boolean = false,
-    val postedAgo: String = "hace 2 h",
-    val caption: String = "" // breve descripción tipo IG
-)
 
 // SCREEN
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun ProductDetailScreen(
+fun ProductDetailScreenCamisa(
     onBackClick: () -> Unit = {},
     onMoreClick: () -> Unit = {},
     onBuyClick: () -> Unit = {},
     onOpenComments: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
-
     val productDetail = ProductDetail(
-        title = "Pantalón Blanco",
-        originalPrice = "$380,000",
-        currentPrice = "$300,000",
+        title = "Camisa Grid Roja",
+        originalPrice = "$169.900",
+        currentPrice = "$129.900",
         isOnSale = true,
-        brand = "Levi's",
-        size = "XS / 30 US / 42 EU",
-        category = "Jeans",
-        condition = "En perfecto estado",
-        color = "Blanco",
-        mascotMessage = "Tito cree que esta prenda es perfecta para tu estilo ✨",
-        sellerName = "Planeta Vintage"
+        brand = "UrbanX",
+        size = "S / M / L",
+        category = "Camisas",
+        condition = "Como nueva, 1 uso",
+        color = "Rojo con cuadros (grid)",
+        mascotMessage = "Tito dice que esta camisa grid roja es la protagonista de tu próximo outfit 🔥",
+        sellerName = "UrbanX Store"
     )
+
 
     val social = remember {
         ProductSocial(
@@ -173,7 +139,11 @@ fun ProductDetailScreen(
             ) {
                 // Galería: pantalon, pantalon2, pantalon3
                 item {
-                    val gallery = listOf(R.drawable.pantalon, R.drawable.pantalon2, R.drawable.pantalon3)
+                    val gallery = listOf(
+                        R.drawable.encontrada,   // misma imagen que usas en el chat
+                        R.drawable.camisa1,
+                        R.drawable.camisa2
+                    )
                     val pagerState = rememberPagerState(pageCount = { gallery.size })
 
                     Box(
@@ -463,7 +433,7 @@ private fun DetailSectionItem(
 @Composable
 private fun ProductDetailPreviewLight() {
     heytitoTheme(darkTheme = false, dynamicColor = false) {
-        ProductDetailScreen()
+        ProductDetailScreenCamisa()
     }
 }
 
@@ -471,6 +441,6 @@ private fun ProductDetailPreviewLight() {
 @Composable
 private fun ProductDetailPreviewDark() {
     heytitoTheme(darkTheme = true, dynamicColor = false) {
-        ProductDetailScreen()
+        ProductDetailScreenCamisa()
     }
 }

@@ -35,7 +35,7 @@ data class NotificationItem(
     val isUnread: Boolean = true // flag para punto indicador/unread
 )
 
-enum class NotificationType { MATCH, ORDER, MESSAGE, CONFIRMATION }
+enum class NotificationType { ORDER, MESSAGE, CONFIRMATION }
 
 /* ---------------------------------- Screen --------------------------------- */
 
@@ -51,17 +51,14 @@ fun NotificationsScreen(
 
     // Mock de datos (esto luego viene del repo/paging)
     val all = listOf(
-        NotificationItem("1", "fashionista_ana",  "¡Match! Le gustó chaqueta de cuero negra", "1d", type = NotificationType.MATCH),
         NotificationItem("2", "carlos_vintage",   "Tu pedido está en camino - Jeans vintage azul", "1d", type = NotificationType.ORDER),
         NotificationItem("3", "sofia_style",      "Te envió un mensaje sobre vestido floral", "2d", type = NotificationType.MESSAGE, isUnread = false),
         NotificationItem("4", "delivery_fast",    "Pedido entregado - Zapatillas Nike Air Max", "3d", type = NotificationType.ORDER, isUnread = false),
         NotificationItem("5", "shadowlynx",       "Confirmó la compra de tu camisa vintage", "4d", type = NotificationType.CONFIRMATION),
         NotificationItem("6", "minimalist_wardrobe","Te envió un mensaje sobre Blazer negro", "5d", type = NotificationType.MESSAGE),
-        NotificationItem("7", "lunavoyager",      "¡Match! Le gustó Zapatillas Nike", "5d", type = NotificationType.MATCH)
     )
 
     val filtered = when (selectedTab) {
-        1 -> all.filter { it.type == NotificationType.MATCH }
         2 -> all.filter { it.type == NotificationType.ORDER }
         3 -> all.filter { it.type == NotificationType.MESSAGE }
         else -> all
@@ -180,7 +177,6 @@ private fun NotificationCard(
 ) {
     val colors = MaterialTheme.colorScheme
     val dotColor = when (notification.type) {
-        NotificationType.MATCH -> colors.primary
         NotificationType.ORDER -> colors.tertiary      // “colorcito” de logística/estado
         NotificationType.MESSAGE -> colors.secondary
         NotificationType.CONFIRMATION -> colors.inversePrimary

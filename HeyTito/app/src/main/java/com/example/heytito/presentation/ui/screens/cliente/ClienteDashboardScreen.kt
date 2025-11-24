@@ -1,6 +1,8 @@
 package com.example.heytito.presentation.ui.screens.cliente
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,20 +25,25 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.compose.heytitoTheme
+import com.example.heytito.R
 
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
 // DATA
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
+
 data class StoreProfileList(
     val name: String,
     val followers: String,
@@ -54,12 +61,15 @@ data class StoreProductList(
     val originalPrice: String? = null,
     val likes: Int = 0,
     val comments: Int = 0,
-    val hasDiscount: Boolean = false
+    val hasDiscount: Boolean = false,
+    @DrawableRes val imageResIds: List<Int> = emptyList(),
+    @DrawableRes val avatarResId: Int? = null // 👈 avatar por tienda/post
 )
 
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
 // SCREEN
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ClienteDashboardScreen(
@@ -78,12 +88,38 @@ fun ClienteDashboardScreen(
     var selected by remember { mutableStateOf(setOf("Streetwear")) }
     val chips = listOf("Streetwear", "Vintage", "Deportivo")
 
-    // Demo data
+    // Demo data (3 primeras con drawables y avatar tiendaX)
     val products = remember {
         listOf(
-            StoreProductList("1", "Atelier Nova", "$189.900", hasDiscount = true, likes = 120, comments = 14),
-            StoreProductList("2", "Luna Urban", "$239.900", likes = 44, comments = 3),
-            StoreProductList("3", "EcoWear", "$129.900", likes = 8, comments = 0),
+            StoreProductList(
+                id = "1",
+                name = "Atelier Nova",
+                price = "$189.900",
+                hasDiscount = true,
+                likes = 120,
+                comments = 14,
+                imageResIds = listOf(R.drawable.ropa2, R.drawable.ropa, R.drawable.ropa2),
+                avatarResId = R.drawable.tienda1
+            ),
+            StoreProductList(
+                id = "2",
+                name = "Luna Urban",
+                price = "$239.900",
+                likes = 44,
+                comments = 3,
+                imageResIds = listOf(R.drawable.conjunto1, R.drawable.conjunto2, R.drawable.conjunto3),
+                avatarResId = R.drawable.tienda2
+            ),
+            StoreProductList(
+                id = "3",
+                name = "EcoWear",
+                price = "$129.900",
+                likes = 8,
+                comments = 0,
+                imageResIds = listOf(R.drawable.pantalon, R.drawable.pantalon2, R.drawable.pantalon3),
+                avatarResId = R.drawable.tienda3
+            ),
+            // Resto sin imágenes ni avatar (usa placeholders)
             StoreProductList("4", "VintageSoul", "$99.900", hasDiscount = true, likes = 76, comments = 9),
             StoreProductList("5", "UrbanX", "$149.900", likes = 3, comments = 0),
             StoreProductList("6", "Minimal Co.", "$209.900", likes = 28, comments = 2)
@@ -151,9 +187,10 @@ fun ClienteDashboardScreen(
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
 // COMPONENTES
-// ────────────────────────────────────────────────────────────────────────────────
+// ==========================
+
 @Composable
 private fun FilterChipsRow(
     chips: List<String>,
@@ -211,11 +248,32 @@ private fun InstaPostCard(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(colors.surfaceVariant)
                     .clickable { onAvatarClick() },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.Search, contentDescription = null, tint = colors.onSurfaceVariant)
+                val avatarId = product.avatarResId
+                if (avatarId != null) {
+                    Image(
+                        painter = painterResource(id = avatarId),
+                        contentDescription = "Avatar de ${product.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Fallback: ícono lupa si no hay avatar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(colors.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = null,
+                            tint = colors.onSurfaceVariant
+                        )
+                    }
+                }
             }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
@@ -227,8 +285,9 @@ private fun InstaPostCard(
             }
         }
 
-        // Carrusel cuadrado como Instagram
-        val pagerState = rememberPagerState(pageCount = { 3 })
+        // Carrusel cuadrado como Instagram (usa drawables si existen)
+        val pageCount = product.imageResIds.takeIf { it.isNotEmpty() }?.size ?: 3
+        val pagerState = rememberPagerState(pageCount = { pageCount })
 
         Box(
             modifier = Modifier
@@ -237,19 +296,29 @@ private fun InstaPostCard(
                 .clickable { onImageClick() }
         ) {
             HorizontalPager(state = pagerState) { page ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            when (page % 3) {
-                                0 -> colors.surfaceVariant.copy(alpha = 0.45f)
-                                1 -> colors.tertiaryContainer.copy(alpha = 0.45f)
-                                else -> colors.primaryContainer.copy(alpha = 0.45f)
-                            }
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Foto ${page + 1}")
+                if (product.imageResIds.isNotEmpty()) {
+                    Image(
+                        painter = painterResource(id = product.imageResIds[page % product.imageResIds.size]),
+                        contentDescription = "Foto ${page + 1} de ${product.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Placeholder de colores si no hay imágenes
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                when (page % 3) {
+                                    0 -> colors.surfaceVariant.copy(alpha = 0.45f)
+                                    1 -> colors.tertiaryContainer.copy(alpha = 0.45f)
+                                    else -> colors.primaryContainer.copy(alpha = 0.45f)
+                                }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Foto ${page + 1}")
+                    }
                 }
             }
 
@@ -349,7 +418,7 @@ private fun InstaPostCard(
         }
 
         // Separador sutil
-        Divider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
     }
 }
 
@@ -404,9 +473,6 @@ private fun SearchRow(
     )
 }
 
-// ────────────────────────────────────────────────────────────────────────────────
-// PREVIEWS
-// ────────────────────────────────────────────────────────────────────────────────
 @Preview(showBackground = true, name = "Cliente – Light")
 @Composable
 private fun ClientePreviewLight() {

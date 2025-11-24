@@ -35,6 +35,7 @@ import com.example.heytito.presentation.ui.screens.common.DeliveryPickupScreen
 import com.example.heytito.presentation.ui.screens.common.NotificationsScreen
 import com.example.heytito.presentation.ui.screens.common.OrdersScreen
 import com.example.heytito.presentation.ui.screens.common.ProductDetailScreen
+import com.example.heytito.presentation.ui.screens.common.ProductDetailScreenCamisa
 import com.example.heytito.presentation.ui.screens.common.SearchScreen
 import com.example.heytito.presentation.ui.screens.common.StoreProfileScreen
 import com.example.heytito.presentation.ui.screens.common.TitoChatScreen
@@ -254,14 +255,25 @@ er.navigate("${AppScreens.ProductDetail}/$productId")
                     onCallClick = {}
                 )
             }
-
             composable(AppScreens.TitoChat.route) {
                 TitoChatScreen(
                     onBackClick = { navController.popBackStack() },
-                    onViewProduct = { /* navController.navigate(AppScreens.ProductDetail.route) */ },
-                    onViewProfile = { /* navController.navigate(AppScreens.StoreProfile.route) */ }
+                    onViewProduct = {
+                        navController.navigate(AppScreens.ProductDetailCamisa.route)
+                    },
+                    onViewProfile = {
+                        // Si quieres que "Ver perfil" también navegue:
+                        navController.navigate(AppScreens.StoreProfile.route)
+                    }
                 )
             }
+            composable (AppScreens.ProductDetailCamisa.route){
+                ProductDetailScreenCamisa (
+                    onBuyClick = { navController.navigate(AppScreens.Cart.route) },
+                    onBackClick = { navController.popBackStack() }
+                ){  }
+            }
+
 
             composable (AppScreens.Favorites.route ){
                 FavoritesScreen(
